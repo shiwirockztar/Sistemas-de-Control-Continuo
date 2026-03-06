@@ -168,19 +168,19 @@ A continuación, se presentan las gráficas de las señales registradas y fotogr
     \caption{Respuesta en lazo abierto con activación simultánea de Q1 y Q2.}
 \end{figure}
 
-\section*{Análisis del Modelo FOPDT}
+\section*{Análisis del modelo FOPDT}
 
 El modelo FOPDT se usa para describir sistemas con comportamiento de primer orden y retardo. En este análisis, se siguieron los pasos presentados a continuación para estimar los parámetros de ganancia \(K\), tiempo muerto \(\theta\) y constante de tiempo \(\tau\).
 
-\subsection*{Pasos para lograr la identificación del modelo FOPDT}
+\subsection*{Pasos de identificación del modelo FOPDT}
 \begin{enumerate}
-    \item \textbf{Identificar el escalón de entrada:} Analizamos los datos de entrada y determinamos el punto en el que la señal cambia, identificando el inicio del escalón.
+    \item \textbf{Identificar el escalón de entrada:} Se analizó la señal de entrada para ubicar el instante en que inicia el cambio tipo escalón.
     
     \item \textbf{Ajustar el modelo FOPDT:} Se utilizó una regresión polinómica como referencia para describir la forma general de la respuesta térmica.
     
-    \item \textbf{Aplicar los métodos de Ziegler-Nichols y Smith:} Se estimaron los parámetros del modelo a partir de la respuesta al escalón, obteniendo las variables \(K\), \(\theta\) y \(\tau\).
+    \item \textbf{Aplicar los métodos de Ziegler-Nichols y Smith:} Se estimaron los parámetros del modelo a partir de la respuesta al escalón, obteniendo \(K\), \(\theta\) y \(\tau\).
     
-    \item \textbf{Simular la respuesta al escalón con el modelo FOPDT:} Se utilizó la función de transferencia para simular la respuesta del sistema considerando el tiempo muerto.
+    \item \textbf{Simular la respuesta al escalón con el modelo FOPDT:} Se usó la función de transferencia para reproducir la respuesta del sistema considerando el tiempo muerto.
     
     \item \textbf{Comparar los resultados:} Se compararon la respuesta real, la regresión polinómica y la respuesta simulada con el modelo FOPDT.
 \end{enumerate}
@@ -204,28 +204,28 @@ Se desarrolló un código en un notebook de Jupyter para calcular los parámetro
 \end{itemize}
 
 
-\section*{Modelo para el calentador número 1 (solo)}
+\section*{Modelo para el calentador 1}
 
-Se presentan las gráficas de comparación entre los métodos de Smith y Ziegler-Nichols junto con la regresión polinómica ajustada.
+Se presentan las gráficas de comparación entre los métodos de Smith y Ziegler-Nichols, junto con la regresión polinómica ajustada.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.45\textwidth]{grafica_smith.png}
     \hfill
     \includegraphics[width=0.45\textwidth]{grafica_nicolson.png}
-    \caption{Comparación de las respuestas: Smith (izquierda) y Ziegler-Nichols (derecha).}
+    \caption{Comparación de respuestas para Q1: Smith (izquierda) y Ziegler-Nichols (derecha).}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.7\textwidth]{compa.png}
     \hfill
-    \caption{Comparación de las respuestas.}
+    \caption{Comparación global de las respuestas para Q1.}
 \end{figure}
 
-\section*{Modelo para el calentador número 2 (solo)}
+\section*{Modelo para el calentador 2}
 
-De manera análoga a lo realizado para el calentador Q1, se puede seguir el mismo procedimiento para encontrar la función de transferencia del calentador número 2 a partir de los datos experimentales obtenidos durante las pruebas de escalón.
+De manera análoga a lo realizado para Q1, se sigue el mismo procedimiento para estimar la función de transferencia del calentador 2 a partir de los datos experimentales de las pruebas de escalón.
 
 % ===================== ESPACIO PARA IMÁGENES =====================
 \begin{figure}[h!]
@@ -233,18 +233,18 @@ De manera análoga a lo realizado para el calentador Q1, se puede seguir el mism
     \includegraphics[width=0.45\textwidth]{imagen1.png}
     \hfill
     \includegraphics[width=0.45\textwidth]{imagen2.png}
-    \caption{Comparación de respuestas para el calentador Q2.}
+    \caption{Comparación de respuestas para Q2.}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.7\textwidth]{imagen3.png}
-    \caption{Gráfica de la respuesta simulada para el calentador Q2.}
+    \caption{Respuesta simulada para Q2.}
 \end{figure}
 
 \section*{Conclusiones}
 
-A partir de la comparación de los modelos FOPDT obtenidos con los métodos de Ziegler-Nichols y Smith, se observa lo siguiente:
+A partir de la comparación de los modelos FOPDT obtenidos con los métodos de Ziegler-Nichols y Smith, se concluye lo siguiente:
 
 \begin{itemize}
     \item Los modelos ajustados por Ziegler-Nichols y Smith representan de forma adecuada el comportamiento general observado en los datos experimentales.
@@ -253,14 +253,14 @@ A partir de la comparación de los modelos FOPDT obtenidos con los métodos de Z
     \item En la práctica, ambos modelos son útiles para una primera aproximación; sin embargo, la selección final debe validarse con criterios de error y pruebas en lazo cerrado.
 \end{itemize}
 
-En conclusión, los métodos de identificación utilizados son adecuados para representar el comportamiento del sistema térmico estudiado. Como trabajo futuro, se recomienda complementar la validación con métricas de ajuste (por ejemplo, IAE, ISE o RMSE) y evaluar el desempeño de controladores diseñados a partir de cada modelo.
+En conclusión, los métodos de identificación utilizados permiten representar de forma adecuada el comportamiento del sistema térmico estudiado. Como trabajo futuro, se recomienda complementar la validación con métricas de ajuste (por ejemplo, IAE, ISE o RMSE) y evaluar el desempeño de controladores diseñados a partir de cada modelo.
 
 \section*{Referencias}
 
 \begin{enumerate}
-    \item Alfaro, V. M. (2001). \textit{Identificación de procesos sobreamortiguados utilizando técnicas de lazo abierto}. Ingeniería 11(1;2):11-25, 2001 San José, Costa Rica.
+    \item Alfaro, V. M. (2001). \textit{Identificación de procesos sobreamortiguados utilizando técnicas de lazo abierto}. Revista Ingeniería, 11(1--2), 11--25.
     
-    \item TCLab Documentation. (Fecha de acceso: 2026). \textit{Documentación oficial de TCLab}. Disponible en: \url{https://tclab.readthedocs.io/}
+    \item TCLab Documentation. (consulta: 2026). \textit{Documentación oficial de TCLab}. \url{https://tclab.readthedocs.io/}
 \end{enumerate}
 
 
