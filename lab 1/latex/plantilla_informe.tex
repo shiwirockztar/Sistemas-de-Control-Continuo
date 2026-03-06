@@ -42,7 +42,7 @@
 \textsc{Universidad de Antioquia\\
 Facultad de Ingeniería\\
 Departamento de Ingeniería Electrónica\\
-Sistemas control continuo}
+Sistemas de Control Continuo}
 
 \vspace{1.2cm}
 
@@ -64,18 +64,18 @@ Sistemas control continuo}
 
 \section{Introducción}
 
-En el estudio de los sistemas de control es fundamental comprender el comportamiento dinámico de los procesos físicos antes de diseñar estrategias de control. Para ello se emplean técnicas de identificación de sistemas que permiten obtener modelos matemáticos a partir de datos experimentales. Estos modelos representan la relación entre las variables de entrada y salida del sistema y constituyen la base para el diseño y análisis de controladores.
+Este informe presenta la construcción y el modelado del sistema de control de temperatura \textit{TempControlLab UdeA}, utilizado en prácticas de laboratorio en la Universidad de Antioquia. La planta cuenta con dos calentadores (transistores de potencia) y dos sensores LM35, por lo que se trabaja con un sistema de dos entradas y dos salidas (MIMO).
 
-En este laboratorio se utiliza el sistema experimental \textit{TempControlLab}, desarrollado para el estudio de procesos térmicos. Este dispositivo permite analizar la dinámica de transferencia de calor mediante el uso de calentadores eléctricos y sensores de temperatura. El sistema posee dos actuadores térmicos (calentadores) y dos sensores de temperatura, lo que lo convierte en un sistema de tipo MIMO (Multiple Input Multiple Output).
+Para describir su comportamiento, se parte de balances de energía expresados con ecuaciones diferenciales. En estas ecuaciones se incluyen los principales mecanismos de transferencia de calor: convección con el ambiente, conducción entre elementos y radiación entre superficies, además del efecto de inercia en la medición de los sensores.
 
-A través de la aplicación de señales de prueba tipo escalón y la medición de la respuesta térmica del sistema, se obtienen datos experimentales que permiten identificar modelos dinámicos del proceso. Posteriormente, estos modelos se ajustan mediante diferentes métodos de identificación, tales como Ziegler–Nichols, Smith y técnicas de optimización, con el fin de obtener una representación matemática adecuada del sistema.
+Con este modelo físico y con los datos obtenidos en pruebas de escalón, se identifican modelos tipo \textit{First Order Plus Dead Time} (FOPDT). Estos modelos sirven como base para analizar la dinámica térmica y, en una etapa posterior, diseñar estrategias de control de temperatura.
 
 
 \section{Propósito del laboratorio}
 
-El objetivo principal de este laboratorio es realizar la identificación experimental de un proceso térmico utilizando el sistema TempControlLab. Para ello se aplican pruebas de escalón en los actuadores térmicos y se registran las respuestas de temperatura del sistema.
+El propósito principal de este laboratorio es identificar experimentalmente un proceso térmico usando el sistema TempControlLab. Para ello, se aplican pruebas de escalón a los calentadores y se registran las respuestas de temperatura.
 
-A partir de los datos experimentales obtenidos, se busca determinar modelos dinámicos que describan la relación entre las entradas del sistema (potencia de los calentadores) y sus salidas (temperaturas medidas por los sensores). En particular, se pretende ajustar modelos de tipo \textit{First Order Plus Dead Time} (FOPDT), los cuales son ampliamente utilizados en la modelación de procesos industriales.
+Con los datos obtenidos, se busca encontrar modelos dinámicos que relacionen las entradas del sistema (potencia en los calentadores) con las salidas (temperaturas medidas por los sensores). En particular, se ajustan modelos tipo \textit{First Order Plus Dead Time} (FOPDT), por ser una forma práctica y común de representar este tipo de procesos.
 
 De manera específica, los objetivos del laboratorio son:
 
@@ -90,15 +90,15 @@ De manera específica, los objetivos del laboratorio son:
 
 \section{Modelo físico del sistema}
 
-El sistema TempControlLab se basa en la transferencia de calor generada por resistencias eléctricas controladas mediante señales PWM provenientes de una tarjeta Arduino. Cada calentador produce energía térmica proporcional a la potencia eléctrica suministrada, lo que provoca un aumento en la temperatura de la placa metálica donde se encuentra instalado.
+El sistema TempControlLab funciona a partir de la transferencia de calor generada por resistencias eléctricas controladas con señales PWM desde una tarjeta Arduino. Cada calentador entrega energía térmica de acuerdo con la potencia aplicada, lo que eleva la temperatura de la placa metálica donde está instalado.
 
-La dinámica térmica del sistema puede describirse mediante un balance de energía que considera los diferentes mecanismos de transferencia de calor presentes en el proceso. En general, el comportamiento térmico de cada elemento puede representarse mediante una ecuación diferencial del tipo
+La dinámica térmica se describe con un balance de energía que considera los distintos mecanismos de transferencia de calor presentes en el proceso. De forma general, el comportamiento de cada elemento puede representarse con una ecuación diferencial del tipo
 
 \begin{equation}
 m c_p \frac{dT}{dt} = Q_{in} - Q_{out}
 \end{equation}
 
-donde $m$ corresponde a la masa del elemento térmico, $c_p$ es el calor específico del material y $T$ es la temperatura del sistema.
+donde $m$ es la masa del elemento térmico, $c_p$ es el calor específico del material y $T$ es la temperatura del sistema.
 
 En el caso particular del TempControlLab, los principales mecanismos de transferencia de calor son:
 
@@ -108,7 +108,7 @@ En el caso particular del TempControlLab, los principales mecanismos de transfer
 \item \textbf{Conducción:} transferencia de calor entre las dos placas térmicas del sistema.
 \end{itemize}
 
-El balance de energía para cada calentador puede representarse de forma simplificada como
+El balance de energía para cada calentador se puede escribir, de forma simplificada, como
 
 \begin{equation}
 m c_p \frac{dT_H}{dt} =
@@ -119,39 +119,39 @@ UA(T_{\infty}-T_H)
 + \alpha Q
 \end{equation}
 
-donde $UA$ representa la transferencia por convección con el ambiente, $\epsilon \sigma A$ describe el efecto de radiación térmica, $Q_{C12}$ corresponde al flujo de calor por conducción entre los calentadores y $Q_{R12}$ representa el intercambio de calor por radiación entre las superficies.
+donde $UA$ representa la transferencia por convección con el ambiente, $\epsilon \sigma A$ representa la radiación térmica, $Q_{C12}$ corresponde al flujo de calor por conducción entre calentadores y $Q_{R12}$ al intercambio radiativo entre superficies.
 
-Adicionalmente, los sensores de temperatura presentan una dinámica propia asociada a su inercia térmica, la cual puede modelarse como
+Además, los sensores de temperatura tienen su propia dinámica por inercia térmica, la cual puede modelarse como
 
 \begin{equation}
 \tau_s \frac{dT_C}{dt} = T_H - T_C
 \end{equation}
 
-donde $T_C$ corresponde a la temperatura medida por el sensor y $T_H$ es la temperatura real de la superficie calentada.
+donde $T_C$ es la temperatura medida por el sensor y $T_H$ es la temperatura real de la superficie calentada.
 
-Debido a la interacción térmica entre los dos calentadores, el sistema presenta acoplamiento entre sus variables, lo que implica que una variación en uno de los calentadores puede afectar ambas temperaturas medidas. Por esta razón el sistema se modela como un sistema MIMO con dos entradas y dos salidas.
+Debido a la interacción térmica entre ambos calentadores, el sistema presenta acoplamiento entre variables: un cambio en un calentador puede afectar las dos temperaturas medidas. Por esta razón, se modela como un sistema MIMO con dos entradas y dos salidas.
 
 
 \section{Interpretación del modelo identificado}
 
-A partir de los datos experimentales obtenidos mediante las pruebas de escalón, se identificaron modelos dinámicos del tipo FOPDT para cada una de las relaciones entrada-salida del sistema. En general, este tipo de modelo puede representarse como
+A partir de los datos obtenidos en las pruebas de escalón, se identificaron modelos FOPDT para cada relación entrada-salida del sistema. En general, este modelo se expresa como
 
 \begin{equation}
 G(s) = \frac{K}{\tau s + 1} e^{-\theta s}
 \end{equation}
 
-donde $K$ corresponde a la ganancia del proceso, $\tau$ es la constante de tiempo del sistema y $\theta$ representa el tiempo muerto asociado al proceso.
+donde $K$ es la ganancia del proceso, $\tau$ es la constante de tiempo y $\theta$ es el tiempo muerto.
 
 \section*{Toma de datos}
 
-A continuación se presentan las graficas y fotos de los experimentos, tanto las graficas de los datos como fotos del montage de la planta termica
+A continuación, se presentan las gráficas de las señales registradas y fotografías del montaje experimental de la planta térmica.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.45\textwidth]{imagen4.jpeg}
     \hfill
     \includegraphics[width=0.45\textwidth]{imagen5.jpeg}
-    \caption{Montaje fisico.}
+    \caption{Montaje físico de la planta térmica.}
 \end{figure}
 
 \begin{figure}[h!]
@@ -159,35 +159,35 @@ A continuación se presentan las graficas y fotos de los experimentos, tanto las
     \includegraphics[width=0.45\textwidth]{UnicamenteQ1.png}
     \hfill
     \includegraphics[width=0.45\textwidth]{UnicamenteQ2.png}
-    \caption{Respuesta lazo abierto unicamente Q1 o Q2.}
+    \caption{Respuestas en lazo abierto con activación individual de Q1 o Q2.}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.45\textwidth]{imagen8.jpeg}
-    \caption{Respuesta lazo abierto ambos Q1 y Q2.}
+    \caption{Respuesta en lazo abierto con activación simultánea de Q1 y Q2.}
 \end{figure}
 
 \section*{Análisis del Modelo FOPDT}
 
-El modelo (FOPDT) es utilizado para describir sistemas que tienen un comportamiento de primer orden con retardo. En este análisis, aplicamos los siguientes pasos para lograr la identificación del modelo y estimar los parámetros de ganancia \( K \), tiempo muerto \( \theta \), y constante de tiempo \( \tau \).
+El modelo FOPDT se usa para describir sistemas con comportamiento de primer orden y retardo. En este análisis, se siguieron los pasos presentados a continuación para estimar los parámetros de ganancia \(K\), tiempo muerto \(\theta\) y constante de tiempo \(\tau\).
 
 \subsection*{Pasos para lograr la identificación del modelo FOPDT}
 \begin{enumerate}
     \item \textbf{Identificar el escalón de entrada:} Analizamos los datos de entrada y determinamos el punto en el que la señal cambia, identificando el inicio del escalón.
     
-    \item \textbf{Ajustar el modelo FOPDT:} Usamos un ajuste de regresión polinómica para modelar el comportamiento del sistema.
+    \item \textbf{Ajustar el modelo FOPDT:} Se utilizó una regresión polinómica como referencia para describir la forma general de la respuesta térmica.
     
-    \item \textbf{Aplicar los métodos de Ziegler-Nichols y Smith:} Estimamos los parámetros del modelo utilizando la respuesta al escalón y los métodos de identificación, obteniendo las variables \( K \), \( \theta \) y \( \tau \).
+    \item \textbf{Aplicar los métodos de Ziegler-Nichols y Smith:} Se estimaron los parámetros del modelo a partir de la respuesta al escalón, obteniendo las variables \(K\), \(\theta\) y \(\tau\).
     
-    \item \textbf{Simular la respuesta al escalón con el modelo FOPDT:} Utilizamos la función de transferencia para simular cómo responde el sistema considerando el tiempo muerto.
+    \item \textbf{Simular la respuesta al escalón con el modelo FOPDT:} Se utilizó la función de transferencia para simular la respuesta del sistema considerando el tiempo muerto.
     
-    \item \textbf{Comparar los resultados:} Comparamos la respuesta real, la regresión polinómica y la respuesta simulada con el modelo FOPDT.
+    \item \textbf{Comparar los resultados:} Se compararon la respuesta real, la regresión polinómica y la respuesta simulada con el modelo FOPDT.
 \end{enumerate}
 
 \subsection*{Resultados}
 
-Se realizo un codigo en un Notebook de Jupyter en el cual se calcularon los valores de los modelos a partir de una simulación experimental de la planta termica con los codigos proporcionados con tclab. A continuación, se muestran los resultados obtenidos para los parámetros del modelo FOPDT tanto de Smith y Ziegler-Nichols para el calentador Q1:
+Se desarrolló un código en un notebook de Jupyter para calcular los parámetros de los modelos a partir de los datos experimentales de la planta térmica, empleando las herramientas proporcionadas por TCLab. A continuación, se presentan los resultados obtenidos para el calentador Q1 mediante los métodos de Ziegler-Nichols y Smith:
 
 \begin{itemize}
     \textbf{Ziegler-Nichols}
@@ -206,7 +206,7 @@ Se realizo un codigo en un Notebook de Jupyter en el cual se calcularon los valo
 
 \section*{Modelo para el calentador número 1 (solo)}
 
-Se muestran las gráficas de la comparación entre los métodos de Smith y Ziegler-Nichols con la regresión polinómica ajustada. Las gráficas se presentan a continuación:
+Se presentan las gráficas de comparación entre los métodos de Smith y Ziegler-Nichols junto con la regresión polinómica ajustada.
 
 \begin{figure}[h!]
     \centering
@@ -242,22 +242,18 @@ De manera análoga a lo realizado para el calentador Q1, se puede seguir el mism
     \caption{Gráfica de la respuesta simulada para el calentador Q2.}
 \end{figure}
 
-
-\section*{Modelo para el calentador número 2 (solo)}
-
 \section*{Conclusiones}
 
-A partir de la comparación de los modelos FOPDT obtenidos mediante los métodos de Ziegler-Nichols y Smith, podemos observar lo siguiente:
+A partir de la comparación de los modelos FOPDT obtenidos con los métodos de Ziegler-Nichols y Smith, se observa lo siguiente:
 
 \begin{itemize}
-    \item Los modelos ajustados a partir de los métodos de Ziegler-Nichols y Smith presentan un buen ajuste a los datos experimentales, con una diferencia en los valores de la constante de tiempo (\(\tau\)) y el tiempo muerto (\(\theta\)) entre ambos métodos.
-    \item El modelo de Ziegler-Nichols muestra un tiempo muerto mayor (\(\theta = 2.95 \, \text{segundos}\)) y una constante de tiempo más grande (\(\tau = 159.05 \, \text{segundos}\)) en comparación con el modelo de Smith, que tiene un tiempo muerto de \( \theta = 11.59 \, \text{segundos} \) y una constante de tiempo \( \tau = 109.32 \, \text{segundos} \).
-    \item Ambos modelos siguen de cerca la respuesta de los datos experimentales, pero el modelo de Smith (curva morada) parece ajustarse mejor a las muestras originales (puntos grises) a lo largo de toda la curva. 
-    \item La diferencia en los tiempos muertos y las constantes de tiempo refleja cómo cada método ajusta la respuesta del sistema a la entrada escalón, lo que es crucial para la elección del modelo adecuado dependiendo de las necesidades del control térmico en el proceso.
-    \item En general, ambos modelos son útiles para la simulación y el diseño de controladores, pero el modelo de Smith presenta un mejor ajuste a los datos originales, especialmente en los primeros y últimos tramos de la respuesta.
+    \item Los modelos ajustados por Ziegler-Nichols y Smith representan de forma adecuada el comportamiento general observado en los datos experimentales.
+    \item Para Q1, ambos métodos estimaron una ganancia prácticamente igual (\(K \approx 0.293\)); sin embargo, difieren en los parámetros dinámicos: Ziegler-Nichols obtuvo \(\theta = 12.5972\,\text{s}\) y \(\tau = 169.0156\,\text{s}\), mientras que Smith obtuvo \(\theta = 23.4411\,\text{s}\) y \(\tau = 111.0140\,\text{s}\).
+    \item Estas diferencias muestran que cada método ajusta de manera distinta la respuesta al escalón, lo cual puede influir en los resultados de simulación y en el diseño del controlador.
+    \item En la práctica, ambos modelos son útiles para una primera aproximación; sin embargo, la selección final debe validarse con criterios de error y pruebas en lazo cerrado.
 \end{itemize}
 
-Se puede concluir que los métodos de identificación utilizados son adecuados para representar el comportamiento del sistema térmico estudiado. Sin embargo, el modelo de Smith ofrece una representación más precisa de la respuesta térmica en comparación con el modelo de Ziegler-Nichols, especialmente en la comparación visual con las muestras originales.
+En conclusión, los métodos de identificación utilizados son adecuados para representar el comportamiento del sistema térmico estudiado. Como trabajo futuro, se recomienda complementar la validación con métricas de ajuste (por ejemplo, IAE, ISE o RMSE) y evaluar el desempeño de controladores diseñados a partir de cada modelo.
 
 \section*{Referencias}
 
@@ -271,9 +267,3 @@ Se puede concluir que los métodos de identificación utilizados son adecuados p
 \end{document}
 
 
-
-
-
-
-
-\end{document}
