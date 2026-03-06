@@ -39,25 +39,25 @@
 % ===================== PORTADA =====================
 
 \begin{center}
-\textsc{Universidad de Antioquia\\
-Facultad de Ingeniería\\
-Departamento de Ingeniería Electrónica\\
-Sistemas de Control Continuo}
+    \textsc{Universidad de Antioquia\\
+    Facultad de Ingeniería\\
+    Departamento de Ingeniería Electrónica\\
+    Sistemas de Control Continuo}
 
-\vspace{1.2cm}
+    \vspace{1.2cm}
 
-\includegraphics[height=2.5cm]{udea.png}
+    \includegraphics[height=2.5cm]{udea.png}
 
-\vspace{0.8cm}
+    \vspace{0.8cm}
 
-{\LARGE \textbf{TempControlLab UdeA: Sistema térmico con sensores LM35}}\\
-{\large \textbf{Modelos de transferencia de calor aplicados}}
+    {\LARGE \textbf{TempControlLab UdeA: Sistema térmico con sensores LM35}}\\
+    {\large \textbf{Modelos de transferencia de calor aplicados}}
 
-\vspace{1cm}
+    \vspace{1cm}
 
-\textbf{Luis Alberto Ardila Páez}\\
-\textbf{Daniel Esteban Tirado Rojas}\\
-\textbf{Jose leonardo Perez Poveda}
+    \textbf{Luis Alberto Ardila Páez}\\
+    \textbf{Daniel Esteban Tirado Rojas}\\
+    \textbf{Jose leonardo Perez Poveda}
 \end{center}
 
 \vspace{1cm}
@@ -80,11 +80,11 @@ Con los datos obtenidos, se busca encontrar modelos dinámicos que relacionen la
 De manera específica, los objetivos del laboratorio son:
 
 \begin{itemize}
-\item Analizar la dinámica térmica del sistema experimental TempControlLab.
-\item Obtener datos experimentales mediante pruebas de escalón en los calentadores.
-\item Identificar modelos dinámicos del proceso utilizando distintos métodos de identificación.
-\item Comparar los resultados obtenidos mediante los métodos de Ziegler–Nichols, Smith y optimización.
-\item Analizar la interacción entre las variables del sistema, evidenciando el comportamiento MIMO del proceso térmico.
+    \item Analizar la dinámica térmica del sistema experimental TempControlLab.
+    \item Obtener datos experimentales mediante pruebas de escalón en los calentadores.
+    \item Identificar modelos dinámicos del proceso utilizando distintos métodos de identificación.
+    \item Comparar los resultados obtenidos mediante los métodos de Ziegler–Nichols, Smith y optimización.
+    \item Analizar la interacción entre las variables del sistema, evidenciando el comportamiento MIMO del proceso térmico.
 \end{itemize}
 
 
@@ -96,31 +96,31 @@ Sea $T_{H1}$ y $T_{H2}$ la temperatura de cada zona calentada, y $T_{\infty}$ la
 La dinámica propuesta para cada bloque térmico es:
 
 \begin{equation}
-m c_p \frac{dT_{H1}}{dt} = UA(T_{\infty} - T_{H1}) + \epsilon \sigma A \left(T_{\infty}^4 - T_{H1}^4\right) + Q_{C12} + Q_{R12} + \alpha_1 Q_1
+    m c_p \frac{dT_{H1}}{dt} = UA(T_{\infty} - T_{H1}) + \epsilon \sigma A \left(T_{\infty}^4 - T_{H1}^4\right) + Q_{C12} + Q_{R12} + \alpha_1 Q_1
 \end{equation}
 
 \begin{equation}
-m c_p \frac{dT_{H2}}{dt} = UA(T_{\infty} - T_{H2}) + \epsilon \sigma A \left(T_{\infty}^4 - T_{H2}^4\right) - Q_{C12} - Q_{R12} + \alpha_2 Q_2
+    m c_p \frac{dT_{H2}}{dt} = UA(T_{\infty} - T_{H2}) + \epsilon \sigma A \left(T_{\infty}^4 - T_{H2}^4\right) - Q_{C12} - Q_{R12} + \alpha_2 Q_2
 \end{equation}
 
 donde:
 
 \begin{itemize}
-\item $UA$ representa la convección hacia el ambiente.
-\item $\epsilon \sigma A$ modela la radiación térmica hacia el ambiente.
-\item $Q_{C12}$ y $Q_{R12}$ representan conducción y radiación mutua entre las dos superficies calientes.
-\item $\alpha_i Q_i$ es la potencia térmica aportada por el calentador $i$, modulada por PWM.
+    \item $UA$ representa la convección hacia el ambiente.
+    \item $\epsilon \sigma A$ modela la radiación térmica hacia el ambiente.
+    \item $Q_{C12}$ y $Q_{R12}$ representan conducción y radiación mutua entre las dos superficies calientes.
+    \item $\alpha_i Q_i$ es la potencia térmica aportada por el calentador $i$, modulada por PWM.
 \end{itemize}
 
 \subsection*{Conducción y radiación mutua}
 El intercambio térmico entre $T_{H1}$ y $T_{H2}$ se modela como:
 
 \begin{equation}
-Q_{C12} = U_s A_s (T_{H2} - T_{H1})
+    Q_{C12} = U_s A_s (T_{H2} - T_{H1})
 \end{equation}
 
 \begin{equation}
-Q_{R12} = \epsilon \sigma A_s \left(T_{H2}^4 - T_{H1}^4\right)
+    Q_{R12} = \epsilon \sigma A_s \left(T_{H2}^4 - T_{H1}^4\right)
 \end{equation}
 
 donde $U_s$ y $A_s$ son el coeficiente y el área efectiva de intercambio térmico entre superficies.
@@ -129,7 +129,7 @@ donde $U_s$ y $A_s$ son el coeficiente y el área efectiva de intercambio térmi
 La lectura del LM35 puede presentar retardo por inercia térmica y contacto. Un modelo simple para cada sensor es:
 
 \begin{equation}
-\tau_s \frac{dT_{C1}}{dt} = T_{H1} - T_{C1}
+    \tau_s \frac{dT_{C1}}{dt} = T_{H1} - T_{C1}
 \end{equation}
 
 y análogamente para $T_{C2}$.
@@ -141,9 +141,9 @@ Debido al acoplamiento térmico entre bloques, un cambio en $Q_1$ o $Q_2$ afecta
 Para la implementación experimental se siguió la secuencia:
 
 \begin{enumerate}
-\item \textbf{Montaje físico:} fijación de disipadores en los transistores de potencia, ubicación de resistencias calefactoras y montaje de los sensores LM35 cerca de la superficie de medida.
-\item \textbf{Cableado a Arduino:} uso de pines PWM (por ejemplo D3 y D5) para cada calentador y entradas analógicas (por ejemplo A0 y A2) para los LM35; alimentación de \SI{12}{V} para potencia y \SI{5}{V} para sensores.
-\item \textbf{Pruebas iniciales en lazo abierto:} aplicación de escalones en Heater1 y Heater2 por separado para observar la evolución de $TC1$ y $TC2$, identificando el acoplamiento térmico entre canales.
+    \item \textbf{Montaje físico:} fijación de disipadores en los transistores de potencia, ubicación de resistencias calefactoras y montaje de los sensores LM35 cerca de la superficie de medida.
+    \item \textbf{Cableado a Arduino:} uso de pines PWM (por ejemplo D3 y D5) para cada calentador y entradas analógicas (por ejemplo A0 y A2) para los LM35; alimentación de \SI{12}{V} para potencia y \SI{5}{V} para sensores.
+    \item \textbf{Pruebas iniciales en lazo abierto:} aplicación de escalones en Heater1 y Heater2 por separado para observar la evolución de $TC1$ y $TC2$, identificando el acoplamiento térmico entre canales.
 \end{enumerate}
 
 
@@ -152,7 +152,7 @@ Para la implementación experimental se siguió la secuencia:
 A partir de los datos obtenidos en las pruebas de escalón, se identificaron modelos FOPDT para cada relación entrada-salida del sistema. En general, este modelo se expresa como
 
 \begin{equation}
-G(s) = \frac{K}{\tau s + 1} e^{-\theta s}
+    G(s) = \frac{K}{\tau s + 1} e^{-\theta s}
 \end{equation}
 
 donde $K$ es la ganancia del proceso, $\tau$ es la constante de tiempo y $\theta$ es el tiempo muerto.
@@ -162,25 +162,25 @@ donde $K$ es la ganancia del proceso, $\tau$ es la constante de tiempo y $\theta
 A continuación, se presentan las gráficas de las señales registradas y fotografías del montaje experimental de la planta térmica.
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.45\textwidth]{imagen4.jpeg}
-    \hfill
-    \includegraphics[width=0.45\textwidth]{imagen5.jpeg}
-    \caption{Montaje físico de la planta térmica.}
+        \centering
+            \includegraphics[width=0.45\textwidth]{imagen4.jpeg}
+                \hfill
+                    \includegraphics[width=0.45\textwidth]{imagen5.jpeg}
+                        \caption{Montaje físico de la planta térmica.}
 \end{figure}
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.45\textwidth]{UnicamenteQ1.png}
-    \hfill
-    \includegraphics[width=0.45\textwidth]{UnicamenteQ2.png}
-    \caption{Respuestas en lazo abierto con activación individual de Q1 o Q2.}
+        \centering
+            \includegraphics[width=0.45\textwidth]{UnicamenteQ1.png}
+                \hfill
+                    \includegraphics[width=0.45\textwidth]{UnicamenteQ2.png}
+                        \caption{Respuestas en lazo abierto con activación individual de Q1 o Q2.}
 \end{figure}
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.45\textwidth]{imagen8.jpeg}
-    \caption{Respuesta en lazo abierto con activación simultánea de Q1 y Q2.}
+        \centering
+            \includegraphics[width=0.45\textwidth]{imagen8.jpeg}
+                \caption{Respuesta en lazo abierto con activación simultánea de Q1 y Q2.}
 \end{figure}
 
 \section*{Análisis del modelo FOPDT}
@@ -188,29 +188,29 @@ A continuación, se presentan las gráficas de las señales registradas y fotogr
 El modelo FOPDT se usa para describir sistemas con comportamiento de primer orden y retardo. En este análisis, se siguieron los pasos presentados a continuación para estimar los parámetros de ganancia \(K\), tiempo muerto \(\theta\) y constante de tiempo \(\tau\).
 
 \begin{equation}
-G(s) = \frac{K}{\tau s + 1} e^{-\theta s}
+    G(s) = \frac{K}{\tau s + 1} e^{-\theta s}
 \end{equation}
 
 \subsection*{Pasos de identificación del modelo FOPDT}
 \begin{enumerate}
-    \item \textbf{Identificar el escalón de entrada:} Se analizó la señal de entrada para ubicar el instante en que inicia el cambio tipo escalón.
-    
-    \item \textbf{Ajustar el modelo FOPDT:} Se utilizó una regresión polinómica como referencia para describir la forma general de la respuesta térmica.
-    
-    \item \textbf{Aplicar los métodos de Ziegler-Nichols y Smith:} Se estimaron los parámetros del modelo a partir de la respuesta al escalón, obteniendo \(K\), \(\theta\) y \(\tau\).
-    
-    \item \textbf{Simular la respuesta al escalón con el modelo FOPDT:} Se usó la función de transferencia para reproducir la respuesta del sistema considerando el tiempo muerto.
-    
-    \item \textbf{Comparar los resultados:} Se compararon la respuesta real, la regresión polinómica y la respuesta simulada con el modelo FOPDT.
+        \item \textbf{Identificar el escalón de entrada:} Se analizó la señal de entrada para ubicar el instante en que inicia el cambio tipo escalón.
+            
+            \item \textbf{Ajustar el modelo FOPDT:} Se utilizó una regresión polinómica como referencia para describir la forma general de la respuesta térmica.
+                
+                \item \textbf{Aplicar los métodos de Ziegler-Nichols y Smith:} Se estimaron los parámetros del modelo a partir de la respuesta al escalón, obteniendo \(K\), \(\theta\) y \(\tau\).
+                    
+                    \item \textbf{Simular la respuesta al escalón con el modelo FOPDT:} Se usó la función de transferencia para reproducir la respuesta del sistema considerando el tiempo muerto.
+                        
+                        \item \textbf{Comparar los resultados:} Se compararon la respuesta real, la regresión polinómica y la respuesta simulada con el modelo FOPDT.
 \end{enumerate}
 
 \subsection*{Método de Ziegler-Nichols}
 El método de Ziegler-Nichols en lazo abierto se basa en la curva de reacción del proceso. A partir de la tangente en el punto de mayor pendiente, se estiman los parámetros del modelo FOPDT.
 
 \begin{enumerate}
-    \item Trazar la tangente en la zona de máxima pendiente de la respuesta al escalón.
-    \item Obtener una estimación de \(\theta\) y \(\tau\) a partir de las intersecciones de la tangente con el eje del tiempo y con el valor final.
-    \item Calcular \(K\) como la relación entre el cambio estacionario de la salida y el cambio aplicado en la entrada.
+        \item Trazar la tangente en la zona de máxima pendiente de la respuesta al escalón.
+            \item Obtener una estimación de \(\theta\) y \(\tau\) a partir de las intersecciones de la tangente con el eje del tiempo y con el valor final.
+                \item Calcular \(K\) como la relación entre el cambio estacionario de la salida y el cambio aplicado en la entrada.
 \end{enumerate}
 
 \subsection*{Método de Smith}
@@ -224,17 +224,17 @@ Los parámetros obtenidos por ambos métodos se compararon con los datos experim
 Se desarrolló un código en un notebook de Jupyter para calcular los parámetros de los modelos a partir de los datos experimentales de la planta térmica, empleando las herramientas proporcionadas por TCLab. A continuación, se presentan los resultados obtenidos para el calentador Q1 mediante los métodos de Ziegler-Nichols y Smith:
 
 \begin{itemize}
-    \textbf{Ziegler-Nichols}
-    \item \textbf{Ganancia:} \( K = 0.2931 \)
-    \item \textbf{Tiempo muerto:} \( \theta = 12.5972 \, \text{segundos} \)
-    \item \textbf{Constante de tiempo:} \( \tau = 169.0156 \, \text{segundos} \)
+        \textbf{Ziegler-Nichols}
+            \item \textbf{Ganancia:} \( K = 0.2931 \)
+                \item \textbf{Tiempo muerto:} \( \theta = 12.5972 \, \text{segundos} \)
+                    \item \textbf{Constante de tiempo:} \( \tau = 169.0156 \, \text{segundos} \)
 \end{itemize}
 
 \begin{itemize}
-    \textbf{Smith}
-    \item \textbf{Ganancia:} \( K = 0.293 \)
-    \item \textbf{Tiempo muerto:} \( \theta = 23.4411 \, \text{segundos} \)
-    \item \textbf{Constante de tiempo:} \( \tau = 111.0140 \, \text{segundos} \)
+        \textbf{Smith}
+            \item \textbf{Ganancia:} \( K = 0.293 \)
+                \item \textbf{Tiempo muerto:} \( \theta = 23.4411 \, \text{segundos} \)
+                    \item \textbf{Constante de tiempo:} \( \tau = 111.0140 \, \text{segundos} \)
 \end{itemize}
 
 
@@ -243,19 +243,37 @@ Se desarrolló un código en un notebook de Jupyter para calcular los parámetro
 Se presentan las gráficas de comparación entre los métodos de Smith y Ziegler-Nichols, junto con la regresión polinómica ajustada.
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.45\textwidth]{grafica_smith.png}
-    \hfill
-    \includegraphics[width=0.45\textwidth]{grafica_nicolson.png}
-    \caption{Comparación de respuestas para Q1: Smith (izquierda) y Ziegler-Nichols (derecha).}
+        \centering
+            \includegraphics[width=0.45\textwidth]{grafica_smith.png}
+                \hfill
+                    \includegraphics[width=0.45\textwidth]{grafica_nicolson.png}
+                        \caption{Comparación de respuestas para Q1: Smith (izquierda) y Ziegler-Nichols (derecha).}
 \end{figure}
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.7\textwidth]{compa.png}
-    \hfill
-    \caption{Comparación global de las respuestas para Q1.}
+        \centering
+            \includegraphics[width=0.7\textwidth]{compa.png}
+                \hfill
+                    \caption{Comparación global de las respuestas para Q1.}
 \end{figure}
+
+Adicionalmente, se analizó el escenario con \textbf{Q1 y Q2 encendidos simultáneamente}, enfocando la interpretación en la salida asociada a \textbf{Q1}. Este caso permite observar cómo el acoplamiento térmico modifica la forma de la respuesta respecto a las pruebas con una sola entrada activa.
+
+\begin{figure}[h!]
+        \centering
+            \includegraphics[width=0.45\textwidth]{Q2_Q1-tangNich-Q1.png}
+                \hfill
+                    \includegraphics[width=0.45\textwidth]{Q2_Q1-smith-Q1.png}
+                        \caption{Ajuste FOPDT para Q1 con Q1 y Q2 encendidos: Tangente/Ziegler-Nichols (izquierda) y Smith (derecha).}
+\end{figure}
+
+\begin{figure}[h!]
+        \centering
+            \includegraphics[width=0.7\textwidth]{Q2_Q1-comparacion-Q1.png}
+                \caption{Comparación global de modelos para la salida Q1 en el escenario simultáneo Q1+Q2.}
+\end{figure}
+
+En estas gráficas se aprecia que ambos métodos reproducen la tendencia general de la dinámica térmica, pero con diferencias en el transitorio inicial y en el tiempo de establecimiento. El método de Tangente/Ziegler-Nichols suele capturar mejor la pendiente inicial, mientras que Smith puede ofrecer un ajuste más suave en la zona media de la respuesta. La comparación final permite identificar cuál representación se aproxima mejor al comportamiento medido cuando hay interacción entre ambos calentadores.
 
 \section*{Modelo para el calentador 2}
 
@@ -263,33 +281,33 @@ De manera análoga a lo realizado para Q1, se sigue el mismo procedimiento para 
 
 % ===================== ESPACIO PARA IMÁGENES =====================
 \begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.45\textwidth]{imagen1.png}
-    \hfill
-    \includegraphics[width=0.45\textwidth]{imagen2.png}
-    \caption{Comparación de respuestas para Q2.}
+        \centering
+            \includegraphics[width=0.45\textwidth]{imagen1.png}
+                \hfill
+                    \includegraphics[width=0.45\textwidth]{imagen2.png}
+                        \caption{Comparación de respuestas para Q2.}
 \end{figure}
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.7\textwidth]{imagen3.png}
-    \caption{Respuesta simulada para Q2.}
+        \centering
+            \includegraphics[width=0.7\textwidth]{imagen3.png}
+                \caption{Respuesta simulada para Q2.}
 \end{figure}
 
 Adicionalmente, se evaluó el caso con \textbf{Q1 y Q2 encendidos simultáneamente}, enfocando el análisis en la salida asociada a \textbf{Q2}. Esta prueba permite evidenciar de forma más clara el efecto de acoplamiento térmico por convección entre disipadores, en contraste con las pruebas previas donde se activaba un solo calentador a la vez.
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.45\textwidth]{Q2_Q1-smith-Q2.png}
-    \hfill
-    \includegraphics[width=0.45\textwidth]{Q2_Q1-tangNich-Q2.png}
-    \caption{Comparación de ajustes para Q2 con Q1 y Q2 encendidos: Smith (izquierda) y Ziegler-Nichols/Tangente (derecha).}
+        \centering
+            \includegraphics[width=0.45\textwidth]{Q2_Q1-smith-Q2.png}
+                \hfill
+                    \includegraphics[width=0.45\textwidth]{Q2_Q1-tangNich-Q2.png}
+                        \caption{Comparación de ajustes para Q2 con Q1 y Q2 encendidos: Smith (izquierda) y Ziegler-Nichols/Tangente (derecha).}
 \end{figure}
 
 \begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.7\textwidth]{Q2_Q1-comparacion-Q2.png}
-    \caption{Comparación global para Q2 en el escenario de activación simultánea de Q1 y Q2.}
+        \centering
+            \includegraphics[width=0.7\textwidth]{Q2_Q1-comparacion-Q2.png}
+                \caption{Comparación global para Q2 en el escenario de activación simultánea de Q1 y Q2.}
 \end{figure}
 
 \section*{Conclusiones}
@@ -297,11 +315,11 @@ Adicionalmente, se evaluó el caso con \textbf{Q1 y Q2 encendidos simultáneamen
 A partir de la comparación de los modelos FOPDT obtenidos con los métodos de Ziegler-Nichols y Smith, se concluye lo siguiente:
 
 \begin{itemize}
-    \item Los modelos ajustados por Ziegler-Nichols y Smith representan de forma adecuada el comportamiento general observado en los datos experimentales.
-    \item Para Q1, ambos métodos estimaron una ganancia prácticamente igual (\(K \approx 0.293\)); sin embargo, difieren en los parámetros dinámicos: Ziegler-Nichols obtuvo \(\theta = 12.5972\,\text{s}\) y \(\tau = 169.0156\,\text{s}\), mientras que Smith obtuvo \(\theta = 23.4411\,\text{s}\) y \(\tau = 111.0140\,\text{s}\).
-    \item Estas diferencias muestran que cada método ajusta de manera distinta la respuesta al escalón, lo cual puede influir en los resultados de simulación y en el diseño del controlador.
-    \item En la prueba con activación simultánea de Q1 y Q2, el análisis de Q2 mostró el efecto de acoplamiento térmico entre disipadores, confirmando que la interacción entre canales debe considerarse en la identificación del modelo.
-    \item En la práctica, ambos modelos son útiles para una primera aproximación; sin embargo, la selección final debe validarse con criterios de error y pruebas en lazo cerrado.
+        \item Los modelos ajustados por Ziegler-Nichols y Smith representan de forma adecuada el comportamiento general observado en los datos experimentales.
+            \item Para Q1, ambos métodos estimaron una ganancia prácticamente igual (\(K \approx 0.293\)); sin embargo, difieren en los parámetros dinámicos: Ziegler-Nichols obtuvo \(\theta = 12.5972\,\text{s}\) y \(\tau = 169.0156\,\text{s}\), mientras que Smith obtuvo \(\theta = 23.4411\,\text{s}\) y \(\tau = 111.0140\,\text{s}\).
+                \item Estas diferencias muestran que cada método ajusta de manera distinta la respuesta al escalón, lo cual puede influir en los resultados de simulación y en el diseño del controlador.
+                    \item En la prueba con activación simultánea de Q1 y Q2, el análisis de Q2 mostró el efecto de acoplamiento térmico entre disipadores, confirmando que la interacción entre canales debe considerarse en la identificación del modelo.
+                        \item En la práctica, ambos modelos son útiles para una primera aproximación; sin embargo, la selección final debe validarse con criterios de error y pruebas en lazo cerrado.
 \end{itemize}
 
 En conclusión, los métodos de identificación utilizados permiten representar de forma adecuada el comportamiento del sistema térmico estudiado. Como trabajo futuro, se recomienda complementar la validación con métricas de ajuste (por ejemplo, IAE, ISE o RMSE) y evaluar el desempeño de controladores diseñados a partir de cada modelo.
@@ -309,12 +327,13 @@ En conclusión, los métodos de identificación utilizados permiten representar 
 \section*{Referencias}
 
 \begin{enumerate}
-    \item Alfaro, V. M. (2001). \textit{Identificación de procesos sobreamortiguados utilizando técnicas de lazo abierto}. Revista Ingeniería, 11(1--2), 11--25.
-    
-    \item TCLab Documentation. (consulta: 2026). \textit{Documentación oficial de TCLab}. \url{https://tclab.readthedocs.io/}
+        \item Alfaro, V. M. (2001). \textit{Identificación de procesos sobreamortiguados utilizando técnicas de lazo abierto}. Revista Ingeniería, 11(1--2), 11--25.
+            
+            \item TCLab Documentation. (consulta: 2026). \textit{Documentación oficial de TCLab}. \url{https://tclab.readthedocs.io/}
 \end{enumerate}
 
 
 \end{document}
 
 
+\)\)\)\)\)\)\)\)\)\)\)\)\)\)\)\)\)\)\)\)\)\)\right)\right)\right)
