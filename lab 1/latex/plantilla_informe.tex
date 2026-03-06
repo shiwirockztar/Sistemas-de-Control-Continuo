@@ -90,46 +90,61 @@ De manera específica, los objetivos del laboratorio son:
 
 \section{Modelo físico del sistema}
 
-El sistema TempControlLab funciona a partir de la transferencia de calor generada por resistencias eléctricas controladas con señales PWM desde una tarjeta Arduino. Cada calentador entrega energía térmica de acuerdo con la potencia aplicada, lo que eleva la temperatura de la placa metálica donde está instalado.
+Sea $T_{H1}$ y $T_{H2}$ la temperatura de cada zona calentada, y $T_{\infty}$ la temperatura ambiente. Se asume para cada bloque térmico una masa $m$ con calor específico $c_p$. El modelo incorpora transferencia de calor por convección, radiación e interacción térmica entre bloques, por lo cual el proceso se considera MIMO (dos entradas y dos salidas).
 
-La dinámica térmica se describe con un balance de energía que considera los distintos mecanismos de transferencia de calor presentes en el proceso. De forma general, el comportamiento de cada elemento puede representarse con una ecuación diferencial del tipo
+\subsection*{Ecuaciones diferenciales}
+La dinámica propuesta para cada bloque térmico es:
 
 \begin{equation}
-m c_p \frac{dT}{dt} = Q_{in} - Q_{out}
+m c_p \frac{dT_{H1}}{dt} = UA(T_{\infty} - T_{H1}) + \epsilon \sigma A \left(T_{\infty}^4 - T_{H1}^4\right) + Q_{C12} + Q_{R12} + \alpha_1 Q_1
 \end{equation}
 
-donde $m$ es la masa del elemento térmico, $c_p$ es el calor específico del material y $T$ es la temperatura del sistema.
+\begin{equation}
+m c_p \frac{dT_{H2}}{dt} = UA(T_{\infty} - T_{H2}) + \epsilon \sigma A \left(T_{\infty}^4 - T_{H2}^4\right) - Q_{C12} - Q_{R12} + \alpha_2 Q_2
+\end{equation}
 
-En el caso particular del TempControlLab, los principales mecanismos de transferencia de calor son:
+donde:
 
 \begin{itemize}
-\item \textbf{Convección:} intercambio de calor entre el sistema y el ambiente circundante.
-\item \textbf{Radiación térmica:} transferencia de energía entre superficies a diferentes temperaturas.
-\item \textbf{Conducción:} transferencia de calor entre las dos placas térmicas del sistema.
+\item $UA$ representa la convección hacia el ambiente.
+\item $\epsilon \sigma A$ modela la radiación térmica hacia el ambiente.
+\item $Q_{C12}$ y $Q_{R12}$ representan conducción y radiación mutua entre las dos superficies calientes.
+\item $\alpha_i Q_i$ es la potencia térmica aportada por el calentador $i$, modulada por PWM.
 \end{itemize}
 
-El balance de energía para cada calentador se puede escribir, de forma simplificada, como
+\subsection*{Conducción y radiación mutua}
+El intercambio térmico entre $T_{H1}$ y $T_{H2}$ se modela como:
 
 \begin{equation}
-m c_p \frac{dT_H}{dt} =
-UA(T_{\infty}-T_H)
-+ \epsilon \sigma A (T_{\infty}^4 - T_H^4)
-+ Q_{C12}
-+ Q_{R12}
-+ \alpha Q
+Q_{C12} = U_s A_s (T_{H2} - T_{H1})
 \end{equation}
-
-donde $UA$ representa la transferencia por convección con el ambiente, $\epsilon \sigma A$ representa la radiación térmica, $Q_{C12}$ corresponde al flujo de calor por conducción entre calentadores y $Q_{R12}$ al intercambio radiativo entre superficies.
-
-Además, los sensores de temperatura tienen su propia dinámica por inercia térmica, la cual puede modelarse como
 
 \begin{equation}
-\tau_s \frac{dT_C}{dt} = T_H - T_C
+Q_{R12} = \epsilon \sigma A_s \left(T_{H2}^4 - T_{H1}^4\right)
 \end{equation}
 
-donde $T_C$ es la temperatura medida por el sensor y $T_H$ es la temperatura real de la superficie calentada.
+donde $U_s$ y $A_s$ son el coeficiente y el área efectiva de intercambio térmico entre superficies.
 
-Debido a la interacción térmica entre ambos calentadores, el sistema presenta acoplamiento entre variables: un cambio en un calentador puede afectar las dos temperaturas medidas. Por esta razón, se modela como un sistema MIMO con dos entradas y dos salidas.
+\subsection*{Lectura del sensor (retardo de medición)}
+La lectura del LM35 puede presentar retardo por inercia térmica y contacto. Un modelo simple para cada sensor es:
+
+\begin{equation}
+\tau_s \frac{dT_{C1}}{dt} = T_{H1} - T_{C1}
+\end{equation}
+
+y análogamente para $T_{C2}$.
+
+Debido al acoplamiento térmico entre bloques, un cambio en $Q_1$ o $Q_2$ afecta ambas temperaturas medidas, lo cual confirma la naturaleza MIMO del sistema.
+
+\section{Procedimiento de implementación}
+
+Para la implementación experimental se siguió la secuencia:
+
+\begin{enumerate}
+\item \textbf{Montaje físico:} fijación de disipadores en los transistores de potencia, ubicación de resistencias calefactoras y montaje de los sensores LM35 cerca de la superficie de medida.
+\item \textbf{Cableado a Arduino:} uso de pines PWM (por ejemplo D3 y D5) para cada calentador y entradas analógicas (por ejemplo A0 y A2) para los LM35; alimentación de \SI{12}{V} para potencia y \SI{5}{V} para sensores.
+\item \textbf{Pruebas iniciales en lazo abierto:} aplicación de escalones en Heater1 y Heater2 por separado para observar la evolución de $TC1$ y $TC2$, identificando el acoplamiento térmico entre canales.
+\end{enumerate}
 
 
 \section{Interpretación del modelo identificado}
@@ -172,6 +187,10 @@ A continuación, se presentan las gráficas de las señales registradas y fotogr
 
 El modelo FOPDT se usa para describir sistemas con comportamiento de primer orden y retardo. En este análisis, se siguieron los pasos presentados a continuación para estimar los parámetros de ganancia \(K\), tiempo muerto \(\theta\) y constante de tiempo \(\tau\).
 
+\begin{equation}
+G(s) = \frac{K}{\tau s + 1} e^{-\theta s}
+\end{equation}
+
 \subsection*{Pasos de identificación del modelo FOPDT}
 \begin{enumerate}
     \item \textbf{Identificar el escalón de entrada:} Se analizó la señal de entrada para ubicar el instante en que inicia el cambio tipo escalón.
@@ -184,6 +203,21 @@ El modelo FOPDT se usa para describir sistemas con comportamiento de primer orde
     
     \item \textbf{Comparar los resultados:} Se compararon la respuesta real, la regresión polinómica y la respuesta simulada con el modelo FOPDT.
 \end{enumerate}
+
+\subsection*{Método de Ziegler-Nichols}
+El método de Ziegler-Nichols en lazo abierto se basa en la curva de reacción del proceso. A partir de la tangente en el punto de mayor pendiente, se estiman los parámetros del modelo FOPDT.
+
+\begin{enumerate}
+    \item Trazar la tangente en la zona de máxima pendiente de la respuesta al escalón.
+    \item Obtener una estimación de \(\theta\) y \(\tau\) a partir de las intersecciones de la tangente con el eje del tiempo y con el valor final.
+    \item Calcular \(K\) como la relación entre el cambio estacionario de la salida y el cambio aplicado en la entrada.
+\end{enumerate}
+
+\subsection*{Método de Smith}
+El método de Smith usa una idea similar de ajuste gráfico sobre la curva de respuesta al escalón, pero con reglas distintas para estimar \(\theta\) y \(\tau\). En la práctica, puede producir parámetros diferentes a Ziegler-Nichols y en algunos casos representar mejor la dinámica real.
+
+\subsection*{Comparación y optimización en Python}
+Los parámetros obtenidos por ambos métodos se compararon con los datos experimentales y se contrastaron con un ajuste numérico implementado en Python. Esta comparación permite seleccionar el modelo con mejor compromiso entre simplicidad y calidad de ajuste.
 
 \subsection*{Resultados}
 
@@ -242,6 +276,22 @@ De manera análoga a lo realizado para Q1, se sigue el mismo procedimiento para 
     \caption{Respuesta simulada para Q2.}
 \end{figure}
 
+Adicionalmente, se evaluó el caso con \textbf{Q1 y Q2 encendidos simultáneamente}, enfocando el análisis en la salida asociada a \textbf{Q2}. Esta prueba permite evidenciar de forma más clara el efecto de acoplamiento térmico por convección entre disipadores, en contraste con las pruebas previas donde se activaba un solo calentador a la vez.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.45\textwidth]{Q2_Q1-smith-Q2.png}
+    \hfill
+    \includegraphics[width=0.45\textwidth]{Q2_Q1-tangNich-Q2.png}
+    \caption{Comparación de ajustes para Q2 con Q1 y Q2 encendidos: Smith (izquierda) y Ziegler-Nichols/Tangente (derecha).}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Q2_Q1-comparacion-Q2.png}
+    \caption{Comparación global para Q2 en el escenario de activación simultánea de Q1 y Q2.}
+\end{figure}
+
 \section*{Conclusiones}
 
 A partir de la comparación de los modelos FOPDT obtenidos con los métodos de Ziegler-Nichols y Smith, se concluye lo siguiente:
@@ -250,6 +300,7 @@ A partir de la comparación de los modelos FOPDT obtenidos con los métodos de Z
     \item Los modelos ajustados por Ziegler-Nichols y Smith representan de forma adecuada el comportamiento general observado en los datos experimentales.
     \item Para Q1, ambos métodos estimaron una ganancia prácticamente igual (\(K \approx 0.293\)); sin embargo, difieren en los parámetros dinámicos: Ziegler-Nichols obtuvo \(\theta = 12.5972\,\text{s}\) y \(\tau = 169.0156\,\text{s}\), mientras que Smith obtuvo \(\theta = 23.4411\,\text{s}\) y \(\tau = 111.0140\,\text{s}\).
     \item Estas diferencias muestran que cada método ajusta de manera distinta la respuesta al escalón, lo cual puede influir en los resultados de simulación y en el diseño del controlador.
+    \item En la prueba con activación simultánea de Q1 y Q2, el análisis de Q2 mostró el efecto de acoplamiento térmico entre disipadores, confirmando que la interacción entre canales debe considerarse en la identificación del modelo.
     \item En la práctica, ambos modelos son útiles para una primera aproximación; sin embargo, la selección final debe validarse con criterios de error y pruebas en lazo cerrado.
 \end{itemize}
 
