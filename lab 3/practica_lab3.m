@@ -179,70 +179,296 @@ close all;
      warning('No existe la variable output en el workspace.');
  end
 
-% 1) Parametros del sistema
- Ajusta estos valores segun tu practica
-t_sim = 20;               Tiempo total de simulacion [s]
-Ts = 0.01;                Tiempo de muestreo para vectores en MATLAB
-K = 1.0;                  Ganancia de ejemplo
-tau = 2.0;                Constante de tiempo de ejemplo
-
- Vector de tiempo y entrada de ejemplo (escalon)
-t = (0:Ts:t_sim).';
-u = ones(size(t));
-
-% 2) Modelo lineal en MATLAB (referencia para comparar)
- G(s) = K / (tau*s + 1)
-num = K;
-den = [tau 1];
-G = tf(num, den);
-
- Simulacion con lsim
-y_lsim = lsim(G, u, t);
-
-figure('Name','Respuesta con lsim');
-plot(t, y_lsim, 'LineWidth', 1.5);
-grid on;
-xlabel('Tiempo [s]');
-ylabel('Salida');
-title('Respuesta de G(s) usando lsim');
-
-% 3) Simulacion de Simulink desde MATLAB
- Cambia este nombre por el .slx de tu practica
-modelo_slx = 'ejemplo1';
-
- Opciones de simulacion (simset / simget)
-opts = simset('SrcWorkspace', 'current');
-opts_actuales = simget(opts); %#ok<NASGU>
-
- Nota:
- Si el modelo no existe aun, comenta este bloque temporalmente.
-if exist([modelo_slx '.slx'], 'file') == 2
-     Ejecuta el modelo con variables en el workspace actual
-    out = sim(modelo_slx, 'StopTime', num2str(t_sim), opts);
-
-     Si usas bloque "To Workspace", podras analizar aqui la senal exportada.
-     Ejemplo esperado (ajusta el nombre):
-     y_sl = y_out.signals.values;
-     t_sl = y_out.time;
-
-    disp('Simulacion en Simulink ejecutada correctamente.');
-else
-    warning('No se encontro %s.slx. Crea o ajusta el nombre del modelo.', modelo_slx);
-end
-
-% 4) Punto de equilibrio y linealizacion (referencia)
- trim y linmod requieren un modelo de Simulink adecuado y configurado.
- Descomenta y ajusta cuando tu modelo este listo.
+% 0.8) Variables generadas en el ETML tras ejecutar la simulacion del ejemplo 1
+ Luego de correr la simulacion desde MATLAB usando sim(...), se generan
+ automaticamente las siguientes variables en el workspace (ETML):
 %
- x0 = []; u0 = []; y0 = []; dx0 = [];
- [x_trim, u_trim, y_trim, dx_trim] = trim(modelo_slx, x0, u0, y0, dx0);
- [A, B, C, D] = linmod(modelo_slx, x_trim, u_trim);
+ - tout
+   Vector de tiempo de simulacion que contiene los instantes de tiempo
+   en los que se registraron los datos.
 %
- disp('Matrices del modelo linealizado:');
- A, B, C, D
+ - xout e yout
+   Vectores de senal correspondientes a los puertos de salida (Out1) del
+   modelo. Representan los estados o variables de interes del sistema
+   simulado.
+%
+ - simout
+   Estructura o array que contiene los datos registrados por el bloque
+   Scope durante la simulacion. Permite visualizar graficamente las
+   senales sin necesidad de abrir el Scope en Simulink.
+%
+ - SimulationMetadata
+   Variable que almacena toda la informacion de la corrida de simulacion,
+   incluyendo parametros de configuracion, tiempos de ejecucion, metodo
+   de resolucion numerica utilizado y otras caracteristicas tecnicas del
+   proceso de simulacion.
+%
+ - ErrorMessage
+   Campo que contiene mensajes de error generados durante la simulacion.
+   En este caso esta vacio, ya que la simulacion se ejecuto sin problemas
+   ni inconsistencias.
+%
+ Notas adicionales:
+ - Estas variables pueden visualizarse con el comando 'whos' en MATLAB.
+ - Los datos pueden ser procesados y graficados con plot() para analisis
+   posterior.
+ - El formato y nombres de variables pueden personalizarse en:
+   Model Settings > Data Import/Export
 
-% 5) Notas de practica
- - Define claramente que entra por Inport y que sale por Outport.
- - Usa To Workspace para exportar variables y compararlas con lsim.
- - Documenta cada prueba: parametros, cambios, resultado y conclusion.
- - Responde en el informe: que sublibrerias usaste y por que.
+% 0.9) Sublibrerías de Simulink, Control System Toolbox y Simulink Extras
+ Las principales librerías disponibles en Simulink contienen las siguientes
+ sublibrerías y bloques, accesibles desde el Library Browser:
+%
+ SIMULINK (libreria principal):
+ - Commonly Used Blocks
+   Contiene los bloques mas utilizados: Sum, Gain, Integrator, Derivative,
+   Step, Constant, Mux, Demux, Scope.
+%
+ - Continuous
+   Bloques para sistemas continuos: Integrator, Derivative, Transfer Fcn,
+   State-Space, Zero-Pole, PID Controller.
+%
+ - Discrete
+   Bloques para sistemas discretos: Discrete-Time Integrator, Transfer Fcn
+   Discrete, Zero-Pole Discrete.
+%
+ - Sinks
+   Bloques para visualizacion y registro de datos: Scope, To Workspace,
+   Display, Floating Scope.
+%
+ - Sources
+   Bloques de entrada: Step, Ramp, Sine Wave, Pulse Generator, Constant,
+   Clock, From Workspace.
+%
+ - Math Operations
+   Bloques de operaciones matematicas: Add, Multiply, Divide, Math Function.
+%
+ - Signal Routing
+   Bloques para manejo de senales: Mux, Demux, Switch, Multi-port Switch.
+%
+ CONTROL SYSTEM TOOLBOX:
+ - Classical Control Design
+   Herramientas para control clasico: PID Controller, Transfer Function,
+   State-Space, Zero-Pole placement.
+%
+ - Linear System Blocks
+   Bloques para sistemas lineales: Transfer Fcn, State-Space, Zero-Pole.
+%
+ - Advanced Control
+   Control avanzado: Adaptive Control, Robust Control, Optimizacion.
+%
+ SIMULINK EXTRAS (si esta disponible):
+ - Additional Discrete
+   Bloques discretos adicionales y variaciones.
+%
+ - Additional Sinks
+   Sinks adicionales para registro y visualizacion extendida.
+%
+ - Additional Sources
+   Fuentes de senal adicionales.
+%
+ Consejos practicos:
+ - Para esta practica, enfoquese en: Commonly Used Blocks, Continuous,
+   Sinks y Sources.
+ - Explore los parametros de cada bloque con doble click para entender
+   sus configuraciones.
+ - Use la ayuda contextual (boton Help) dentro de cada bloque para mas
+   detalles sobre funcionamiento y parametrizacion.
+ - Anote los bloques que utilice para referencia en informes posteriores.
+
+% 0.10) ¿Qué diferencia de funcionalidad existe entre Out y To Workspace?
+ 
+ RESPUESTA SINTETICA:
+ Out (Outport) y To Workspace tienen propositos distintos en Simulink,
+ aunque ambos exportan datos. La diferencia radica en su funcion dentro
+ de la arquitectura del modelo.
+%
+ DIFERENCIACION DETALLADA:
+%
+ OUT (Outport):
+ - Define la INTERFAZ DE SALIDA del modelo o subsistema.
+ - Permite que senales salgan del diagrama hacia bloques externos o hacia
+   la ventana de comandos de MATLAB mediante sim(...).
+ - Es obligatorio si se desea comunicacion estructurada entre:
+   * Modelos jerarquicos (subsistemas que necesitan compartir senales)
+   * La funcion sim(...) y el workspace de MATLAB
+ - Los datos se retornan como variables con nombres predeterminados
+   (yout, xout, etc.) o personalizables.
+ - Ejemplo: Usar Out1 para obtener la salida del sistema que se usara
+   en calculos posteriores o graficos en MATLAB.
+%
+ TO WORKSPACE:
+ - NO define interfaz del modelo; es un bloque de REGISTRO O MONITOREO.
+ - Guarda internamente los datos de la simulacion en el workspace sin
+   necesidad de que salgan como puerto del diagrama.
+ - Es OPCIONAL; su proposito es documental y de analisis posterior.
+ - Permite elegir el formato de guardado:
+   * Array (matriz con tiempo en columna 1)
+   * Structure (estructura con campos etiquetados)
+   * Structure with time (estructura con campo tiempo separado)
+ - No interfiere con la comunicacion formal del modelo.
+ - Ejemplo: Grabar internamente una senal intermedia (como un error de
+   control) para inspeccionarla despues sin que sea una salida oficial.
+%
+ COMPARACION EN TABLA:
+%
+ Aspecto                | Out (Outport)         | To Workspace
+ ---|---|---
+ Funcion principal      | Interfaz de salida    | Registro de datos
+ Obligatorio            | Si (para sim(...))    | No (opcional)
+ Retorna datos a MATLAB | Si, automaticamente   | Si, por guardado interno
+ Nombres de variables   | Predefinidos (yout)   | Personalizables
+ Formatos disponibles   | Array                 | Array, Structure, etc.
+ Jerarquia de bloques   | Define puertos        | Solo monitoreo
+ Uso tipico             | Exportar datos        | Grabar senales internas
+%
+ CASO DE USO PRACTICO CON AMBOS:
+%
+ Escenario: Simulacion de un sistema de control con entrada, salida y
+ senal de error de control.
+%
+ 1. Use Out1 para la salida del sistema (y del modelo).
+ 2. Use Out2 para la accion de control (u) si es necesaria en MATLAB.
+ 3. Use "To Workspace" conectado al error (e = r - y) para grabar esta
+    senal intermedia sin necesidad de puerto adicional.
+%
+ Resultado en workspace:
+ - Automaticamente: yout, uout (si tiene Out2)
+ - Grabado por To Workspace: error_signal (nombre personalizado)
+%
+ RECOMENDAZIONE PARA ESTA PRACTICA:
+ - Use Outport (Out1, Out2) para senales que necesita en MATLAB.
+ - Use To Workspace para senales internas que quiera analizar sin
+   declararlas como puertos oficiales del modelo.
+ - Ambas opciones PUEDEN COEXISTIR en el mismo modelo sin conflicto.
+ 
+% 0.11) ¿Tiene alguna variable no esperada? (Analisis adicional)
+
+ PREGUNTA:
+ Despues de ejecutar la simulacion, al revisar el workspace con 'whos',
+ aparecen variables como SimulationMetadata y ErrorMessage. ¿Son variables
+ no esperadas o forman parte del proceso de simulacion?
+%
+ RESPUESTA:
+ NO son variables inesperadas. SimulationMetadata y ErrorMessage son
+ variables ESPERADAS y SON PARTE DEL FUNCIONAMIENTO NORMAL de la funcion
+ sim(...) en Simulink. Aparecen automaticamente en el workspace.
+%
+ DESCRIPCION DETALLADA:
+%
+ SimulationMetadata:
+ - Contenido: Variable de estructura que almacena TODA la informacion
+   metadata de la corrida de simulacion.
+ - Incluye:
+   * Nombre y ruta del modelo simulado
+   * Parametros del solver (tolerancia, tipo de paso, etc.)
+   * Tiempos de inicio y fin de simulacion
+   * Numero de pasos de integracion realizados
+   * Informacion de compilacion y enlace del modelo
+   * Configuracion de diagnosticos aplicados
+   * Resumen de la ejecucion (exito, advertencias, etc.)
+ - Proposito: Documento completo del entorno y condiciones en que se
+   ejecuto la simulacion, util para reproducibilidad y auditorias.
+ - Acceso: SimulationMetadata es una estructura; acceda a sus campos con
+   punto: SimulationMetadata.ModelName, etc.
+%
+ ErrorMessage:
+ - Contenido: Campo de la salida de sim(...) que REGISTRA ERRORES de
+   simulacion si los hay.
+ - Caracteristicas:
+   * Si NO hay errores => está VACÍA (variable string vacío '')
+   * Si hay errores => contiene descripcion del problema
+   * Incluye linea de ejecucion donde ocurrio el error
+   * Facilita diagnostico rapido de problemas
+ - Proposito: Mecanismo automatico de reporte de anomalias sin necesidad
+   de capturar excepciones manualmente en try-catch.
+ - En la practica actual está VACIA porque la simulacion fue EXITOSA.
+%
+ VERIFICACION EN EL WORKSPACE:
+ 
+ Comando recomendado para revisar:
+   whos SimulationMetadata ErrorMessage
+   
+ Si ejecuta:
+   SimulationMetadata
+   
+ MATLAB mostrara una estructura con todos sus campos.
+ 
+ Para ver el ErrorMessage:
+   ErrorMessage
+   
+ Si esta vacio, vera: ans = [] (conjunto vacio) o '' (string vacio).
+%
+ RECOMENDACION PARA LA PRACTICA:
+ - Estas variables SON NORMALES y ESPERADAS.
+ - No las elimine a menos que necesite limpiar el workspace.
+ - Si desea evitarlas en futuras simulaciones, use la opcion 'ReturnWorkspaceOutputs'
+   en sim(...) con valor false (pero esto es avanzado).
+ - Para esta practica, DOCUMENTELAS en sus informes mencionando que fueron
+   generadas automaticamente por el proceso de simulacion y que su presencia
+   indica que la simulacion se ejecuto correctamente.
+%
+ CONCLUSION:
+ SimulationMetadata y ErrorMessage NO son variables inesperadas o problematicas.
+ Son INDICADORES DE EXITO de la simulacion. Su presencia confirma que:
+ 1. sim(...) se ejecuto correctamente
+ 2. No hubo errores en la ejecucion
+ 3. Toda la informacion de la corrida fue registrada para auditoria
+
+% 0.12) Graficar la respuesta del sistema con variables del ETML (plot)
+ PREGUNTA:
+ Con la informacion contenida en las variables del ETML, grafique la
+ respuesta del sistema usando plot. Recuerde que las variables estan en
+ formato arreglo (con tiempo), por lo que primero debe extraer columnas.
+%
+ RESPUESTA:
+ Cuando una variable esta en formato arreglo, MATLAB la guarda como una
+ matriz donde cada columna representa una senal distinta.
+%
+ Extraccion de columnas (indexacion):
+ - Sintaxis general: matriz(:,columna)
+ - Ejemplo:
+   * t = datos(:,1);   % primera columna: tiempo
+   * y = datos(:,2);   % segunda columna: salida
+%
+ Esto significa:
+ - ':'  toma todas las filas
+ - '1'  toma la columna 1
+ - '2'  toma la columna 2
+%
+ EJEMPLO PRACTICO (variable output):
+%
+ if exist('output','var') == 1
+     t = output(:,1);    % columna de tiempo
+     y = output(:,2);    % columna de salida
+
+     figure('Name','Respuesta del sistema');
+     plot(t, y, 'b', 'LineWidth', 1.5);
+     grid on;
+     xlabel('Tiempo [s]');
+     ylabel('Salida y(t)');
+     title('Respuesta temporal del sistema');
+ else
+     warning('No existe la variable output en el workspace.');
+ end
+%
+ EJEMPLO SI USA yout/tout:
+%
+ if exist('tout','var') == 1 && exist('yout','var') == 1
+     t2 = tout;
+     y2 = yout(:,1);     % primera salida (si yout tiene varias columnas)
+
+     figure('Name','Respuesta desde yout/tout');
+     plot(t2, y2, 'r', 'LineWidth', 1.5);
+     grid on;
+     xlabel('Tiempo [s]');
+     ylabel('Salida y(t)');
+     title('Respuesta del sistema (yout vs tout)');
+ end
+%
+ RESUMEN:
+ Para extraer una columna de una matriz en MATLAB use indexacion:
+   variable(:,n)
+ donde n es el numero de columna. Luego grafique con:
+   plot(t, y)
+
