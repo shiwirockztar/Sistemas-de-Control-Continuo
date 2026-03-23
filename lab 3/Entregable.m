@@ -1,10 +1,12 @@
 %[text] ## Práctica Lab 3 – Simulación de Sistemas de Control (MATLAB + Simulink)
-%[text] Curso: Sistemas de Control ContinuoObjetivo
+%[text] Curso: Sistemas de Control Continuo
+%[text] **Objetivo:**
 %[text] - Preparar variables en MATLAB
 %[text] - Ejecutar un modelo de Simulink desde MATLAB
 %[text] - Exportar y analizar resultados \
 %[text] **Nota técnica:**
-%[text] Al guardar un modelo se genera un archivo `.slx` que contiene el diagrama y la configuración de los bloques.4.1) Procedimiento de arranque
+%[text] Al guardar un modelo se genera un archivo `.slx` que contiene el diagrama y la configuración de los bloques.
+%[text] ## 4.1) Procedimiento de arranque
 %[text] 1. Ejecutar `simulink` en MATLAB
 %[text] 2. Abrir **New \> Blank Model**
 %[text] 3. Explorar el **Library Browser**
@@ -12,7 +14,7 @@
 %[text] - **Simulink:** Commonly Used Blocks, Continuous, Discrete, Sinks, Sources, Math Operations, Signal Routing
 %[text] - **Control System Toolbox**
 %[text] - **Simulink Extras** (si está disponible) \
-%[text] Principales sublibrerías
+%[text] **Principales sublibrerías**
 %[text] **Simulink:**
 %[text] - *Commonly Used Blocks:* Sum, Gain, Integrator, Derivative, Step, Constant, Mux, Demux, Scope
 %[text] - *Continuous:* Integrator, Transfer Fcn, State-Space, Zero-Pole, PID Controller
@@ -46,9 +48,10 @@
 %[text] - Structure
 %[text] - Structure with time \
 %[text] **Conexión sugerida:**
-%[text] Entrada / Salida / Control → Mux → Scope4.4) Bloques In1, Out1 y To Workspace
+%[text] Entrada / Salida / Control → Mux → Scope
+%[text] ## 4.4) Bloques In1, Out1 y To Workspace
 %[text] 
-%[text]  `Conexion sugerida:`
+%[text]  `Conexión sugerida:`
 %[text]  `[entrada]` `----``\`
 %[text]  `[salida ]` `-----` `>` `Mux` `(``3``)` `-->` `Scope`
 %[text]  `[control]` `----/`
@@ -95,12 +98,12 @@
 %[text] **Notas:**
 %[text] - Usar `whos` para visualizar variables
 %[text] - Analizar con `plot()`
-%[text] - Los nombres y formatos pueden configurarse en:*Model Settings \> Data Import/Export*
-%[text] - `SimulationMetadata y ErrorMessage NO` `son variables inesperadas o problematicas.`
-%[text] -  `Son INDICADORES DE EXITO de la simulacion. Su presencia confirma que:`
-%[text] -  `1.` `sim``(...) se ejecuto correctamente`
-%[text] -  `2.` `No hubo errores en la ejecucion`
-%[text] -  `3.` `Toda la informacion de la corrida fue registrada para auditoria` \
+%[text] - Los nombres y formatos pueden configurarse en: *Model Settings \> Data Import/Export*.
+%[text] - `SimulationMetadata` y `ErrorMessage` **NO** son variables inesperadas o problemáticas.
+%[text] - Son indicadores de éxito de la simulación. Su presencia confirma que:
+%[text] - `1.` `sim(...)` se ejecutó correctamente.
+%[text] - `2.` No hubo errores en la ejecución.
+%[text] - `3.` Toda la información de la corrida fue registrada para auditoría. \
 %[text] 
 % Extraer tiempo
 t = out.tout;
