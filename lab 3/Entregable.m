@@ -88,18 +88,48 @@
 %[text] - Salida al workspace (Out1 o global)
 %[text] - Guardar: `time`, `states`, `output`
 %[text] - Formato recomendado: **Array** \
+%[text] **Código usado para graficar en 4.5 (desde ETML):**
+%[text] - Partiendo de: `out = sim('ejemplo1', 'StopTime', '5')`
+
+% Extraer tiempo
+ t = out.tout;
+
+% Extraer estados
+ x1 = out.xout(:,1);
+ x2 = out.xout(:,2);
+ x3 = out.xout(:,3);
+
+% Extraer salida
+ yData = out.yout(:,1);
+
+% Graficar
+ figure
+ hold on
+ plot(t, x1, 'LineWidth', 1.2)
+ plot(t, x2, 'LineWidth', 1.2)
+ plot(t, x3, 'LineWidth', 1.2)
+ plot(t, yData, 'k', 'LineWidth', 1.8)
+ xlabel('Tiempo (s)')
+ ylabel('Respuesta del sistema')
+ title('Respuesta del sistema simulada')
+ legend('x1','x2','x3','y')
+ grid on
+ hold off
+%[text] Grafica.
+%[text] ![](text:image:77e2)
+
 %[text] ## 4.6) Comandos `lsim` y `sim` desde ETML
 %[text] **Pregunta:** ¿Qué diferencia importante hay entre `lsim` y `sim`?
 %[text] **Respuesta:**
-%[text] - `lsim` simula **modelos lineales** ya definidos en MATLAB (por ejemplo, `tf`, `ss`, `zpk`) y requiere pasar explícitamente la entrada `u` y el tiempo `t`.
-%[text] - `sim` ejecuta un **modelo de Simulink (.slx)** completo, incluyendo no linealidades, saturaciones, switches, subsistemas, eventos y lógica de bloques.
-%[text] - En resumen: `lsim` opera sobre un modelo matemático lineal en MATLAB; `sim` opera sobre el diagrama de bloques de Simulink.
+%[text] - `lsim` simula en ETML un **modelo lineal LTI** (`tf`, `ss`, `zpk`) a partir de señales que se entregan explícitamente (`u(t)` y `t`).
+%[text] - `sim` corre el **modelo gráfico de Simulink (.slx)** usando la configuración del modelo (solver, `StopTime`, bloques, conexiones y parámetros).
+%[text] - Por eso, `lsim` es ideal para análisis de un modelo lineal ya reducido, mientras que `sim` representa el comportamiento del diagrama completo construido en SL.
 %[text] **Pregunta:** ¿Por qué son importantes en SL los iconos **Inport** y **Outport**?
 %[text] **Respuesta:**
-%[text] - Definen la **interfaz formal** del modelo (entradas y salidas externas).
-%[text] - Permiten ejecutar el modelo desde ETML con `sim` sin abrir Simulink y conectar datos del workspace (Inport).
-%[text] - Hacen posible recuperar señales de salida de manera ordenada en MATLAB/`SimulationOutput` (Outport).
-%[text] - Facilitan reutilizar el modelo como bloque dentro de otros modelos y mejoran la modularidad.
+%[text] - Definen la **interfaz externa** del modelo para la simulación desde VCML: por `Inport` entra la señal desde ETML y por `Outport` salen resultados hacia ETML.
+%[text] - Son claves en la segunda forma de trabajo de la guía (simular desde MATLAB con `sim`).
+%[text] - Sin estos puertos, el modelo se ejecuta más fácilmente en SL de forma directa (por ejemplo con bloque escalón interno), pero se pierde control y acople limpio con variables del workspace.
+%[text] - También mejoran modularidad y reutilización cuando el modelo se integra como subsistema en otros diagramas.
 %[text] ## 4.7) Ejecución de `ejemplo1` y análisis de variables con `whos`
 %[text] Comandos usados en VCML:
 %[text] - `whos`
@@ -108,19 +138,19 @@
 %[text] - `out = sim('ejemplo1', 'StopTime', '5')`
 %[text] - `whos`
 %[text] **¿Cuántas variables tiene ahora el ETML?**
-%[text] - Si se limpió el workspace antes, normalmente queda **1 variable principal: `out`**.
-%[text] - Dependiendo de la configuración del modelo (exportación al workspace), pueden aparecer además variables internas de salida, pero en flujo moderno lo habitual es encapsular todo en `out`.
+%[text] - Si se limpió el workspace y se guarda la salida en variable, normalmente aparece **`out`** como variable principal.
+%[text] - Según `Model Settings > Data Import/Export` y bloques tipo `To Workspace`, pueden coexistir otras variables exportadas (`tout`, `yout`, `xout`, `simout`).
 %[text] **¿De qué tipo son?**
-%[text] - `out` es de tipo **`Simulink.SimulationOutput`** (objeto contenedor de resultados).
-%[text] - Dentro de `out` se encuentran señales como `tout`, `yout`, `xout`, `simout`, `SimulationMetadata`, `ErrorMessage` (si están configuradas).
+%[text] - `out` es de tipo **`Simulink.SimulationOutput`**.
+%[text] - Las demás variables, si se exportan aparte, suelen ser arreglos o estructuras de tiempo-señal (según el formato configurado en la práctica).
 %[text] **¿Tienen alguna relación?**
-%[text] - Sí. Todas corresponden a **la misma corrida de simulación** y están sincronizadas por el tiempo (`tout`).
-%[text] - `yout/xout/simout` son resultados numéricos; `SimulationMetadata` documenta la corrida; `ErrorMessage` reporta fallos (vacío si no hubo errores).
+%[text] - Sí. Todas provienen de **la misma corrida de simulación** y están ligadas por el tiempo de simulación.
+%[text] - `yout`, `xout` y `simout` describen señales calculadas; `SimulationMetadata` y `ErrorMessage` documentan el estado de la corrida.
 %[text] **¿Cómo cambia el número y tipo de variables con `out = sim('ejemplo1')`?**
 %[text] - El tipo de `out` **no cambia**: sigue siendo `Simulink.SimulationOutput`.
-%[text] - En general el número de variables externas en ETML también **permanece igual** (sigue `out`).
-%[text] - Lo que cambia normalmente es el **tiempo final de simulación** (usa el `StopTime` configurado en el modelo en lugar de forzar `5`).
-%[text] - Por eso cambia la longitud de las señales dentro de `out`, no necesariamente la cantidad de variables en el workspace.
+%[text] - En general, la cantidad y tipo de variables visibles en ETML se mantiene; lo que cambia es el horizonte temporal usado por la simulación.
+%[text] - Con `'StopTime','5'` se fuerza 5 s. Sin ese argumento, `sim` usa el `StopTime` definido dentro del modelo.
+%[text] - En consecuencia, suele cambiar la longitud de las señales (número de muestras), más que el tipo de variable.
 %[text] ## Variables generadas en el workspace (ETML)
 %[text] Al ejecutar `sim(...)` se obtienen:
 %[text] - **tout:** vector de tiempo
@@ -136,34 +166,8 @@
 %[text] - Son indicadores de éxito de la simulación. Su presencia confirma que:
 %[text] - `1.` `sim(...)` se ejecutó correctamente.
 %[text] - `2.` No hubo errores en la ejecución.
-%[text] - `3.` Toda la información de la corrida fue registrada para auditoría. \
-%[text] 
-% Extraer tiempo
-t = out.tout;
+%[text] - `3.` Toda la información de la corrida fue registrada. \
 
-% Extraer estados
-x1 = out.xout(:,1);
-x2 = out.xout(:,2);
-x3 = out.xout(:,3);
-
-% Extraer salida
-yData = out.yout(:,1);   % si yout es vector, tambien sirve
-
-% Graficar
-figure %[output:5c5ec267]
-hold on %[output:5c5ec267]
-plot(t, x1, 'LineWidth', 1.2) %[output:5c5ec267]
-plot(t, x2, 'LineWidth', 1.2) %[output:5c5ec267]
-plot(t, x3, 'LineWidth', 1.2) %[output:5c5ec267]
-plot(t, yData, 'k', 'LineWidth', 1.8) %[output:5c5ec267]
-
-xlabel('Tiempo (s)') %[output:5c5ec267]
-ylabel('Respuesta del sistema') %[output:5c5ec267]
-title('Respuesta del sistema simulada') %[output:5c5ec267]
-legend('x1','x2','x3','y') %[output:5c5ec267]
-grid on %[output:5c5ec267]
-hold off %[output:5c5ec267]
-%[text] ![](text:image:77e2)
 
 %[appendix]{"version":"1.0"}
 %---
