@@ -88,6 +88,39 @@
 %[text] - Salida al workspace (Out1 o global)
 %[text] - Guardar: `time`, `states`, `output`
 %[text] - Formato recomendado: **Array** \
+%[text] ## 4.6) Comandos `lsim` y `sim` desde ETML
+%[text] **Pregunta:** ¿Qué diferencia importante hay entre `lsim` y `sim`?
+%[text] **Respuesta:**
+%[text] - `lsim` simula **modelos lineales** ya definidos en MATLAB (por ejemplo, `tf`, `ss`, `zpk`) y requiere pasar explícitamente la entrada `u` y el tiempo `t`.
+%[text] - `sim` ejecuta un **modelo de Simulink (.slx)** completo, incluyendo no linealidades, saturaciones, switches, subsistemas, eventos y lógica de bloques.
+%[text] - En resumen: `lsim` opera sobre un modelo matemático lineal en MATLAB; `sim` opera sobre el diagrama de bloques de Simulink.
+%[text] **Pregunta:** ¿Por qué son importantes en SL los iconos **Inport** y **Outport**?
+%[text] **Respuesta:**
+%[text] - Definen la **interfaz formal** del modelo (entradas y salidas externas).
+%[text] - Permiten ejecutar el modelo desde ETML con `sim` sin abrir Simulink y conectar datos del workspace (Inport).
+%[text] - Hacen posible recuperar señales de salida de manera ordenada en MATLAB/`SimulationOutput` (Outport).
+%[text] - Facilitan reutilizar el modelo como bloque dentro de otros modelos y mejoran la modularidad.
+%[text] ## 4.7) Ejecución de `ejemplo1` y análisis de variables con `whos`
+%[text] Comandos usados en VCML:
+%[text] - `whos`
+%[text] - `clear <variables>`
+%[text] - `whos`
+%[text] - `out = sim('ejemplo1', 'StopTime', '5')`
+%[text] - `whos`
+%[text] **¿Cuántas variables tiene ahora el ETML?**
+%[text] - Si se limpió el workspace antes, normalmente queda **1 variable principal: `out`**.
+%[text] - Dependiendo de la configuración del modelo (exportación al workspace), pueden aparecer además variables internas de salida, pero en flujo moderno lo habitual es encapsular todo en `out`.
+%[text] **¿De qué tipo son?**
+%[text] - `out` es de tipo **`Simulink.SimulationOutput`** (objeto contenedor de resultados).
+%[text] - Dentro de `out` se encuentran señales como `tout`, `yout`, `xout`, `simout`, `SimulationMetadata`, `ErrorMessage` (si están configuradas).
+%[text] **¿Tienen alguna relación?**
+%[text] - Sí. Todas corresponden a **la misma corrida de simulación** y están sincronizadas por el tiempo (`tout`).
+%[text] - `yout/xout/simout` son resultados numéricos; `SimulationMetadata` documenta la corrida; `ErrorMessage` reporta fallos (vacío si no hubo errores).
+%[text] **¿Cómo cambia el número y tipo de variables con `out = sim('ejemplo1')`?**
+%[text] - El tipo de `out` **no cambia**: sigue siendo `Simulink.SimulationOutput`.
+%[text] - En general el número de variables externas en ETML también **permanece igual** (sigue `out`).
+%[text] - Lo que cambia normalmente es el **tiempo final de simulación** (usa el `StopTime` configurado en el modelo en lugar de forzar `5`).
+%[text] - Por eso cambia la longitud de las señales dentro de `out`, no necesariamente la cantidad de variables en el workspace.
 %[text] ## Variables generadas en el workspace (ETML)
 %[text] Al ejecutar `sim(...)` se obtienen:
 %[text] - **tout:** vector de tiempo
