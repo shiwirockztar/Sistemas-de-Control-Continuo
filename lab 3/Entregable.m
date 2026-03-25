@@ -168,95 +168,92 @@
 %[text] - `2.` No hubo errores en la ejecución.
 %[text] - `3.` Toda la información de la corrida fue registrada. \
 
-## 4.8) Efectos de Saturación y Linealización
+%% 4.8) Efectos de Saturacion y Linealizacion
+% Modelo con saturacion:
+% El bloque Saturation en Simulink limita la salida a un rango definido
+% (en este caso +/-1). Esto introduce no linealidad que afecta la respuesta.
+%
+% Pasos sugeridos:
+% 1) Abrir o crear ejemplo2.slx
+% 2) Copiar el modelo de ejemplo1.slx
+% 3) Agregar un bloque Saturation (limites: -1 a +1)
+% 4) Conectar: entrada -> sistema -> saturacion -> salida
 
-### Modelo con Saturación
-
-El bloque **Saturation** en Simulink limita la salida a un rango definido (en este caso ±1). Esto introduce **no linealidad** que afecta la respuesta dinámica.
-
-**Pasos:**
-1. Abrir o crear `ejemplo2.slx`
-2. Copiar el modelo de `ejemplo1.slx`
-3. Agregar un bloque **Saturation** (límites: -1 a +1) después del integrador o sistema principal
-4. Conectar como se muestra: entrada → sistema → saturación → salida
-
-### Análisis Programado
-
-```matlab
 % Programa: ejemplo2m.m
 % Objetivo: Simular sistema saturado con entrada variable (1.5 a 7.5)
-% Calcula sobrenivel (SP) y tiempo de asentamiento (ts)
+% y calcular sobreshoot porcentual (SP).
 
 clear variables
-t = [0:0.1:10]'; % Vector de tiempo
+%% limpiar todas las variables usadas
+clear t ut simOut tt yy yint y0 y0ss SP u
 
-% Prealoca variables
-y0 = zeros(length(t), 7);
-SP = zeros(1, 7);
-ts_vec = zeros(1, 7);
+t = (0:0.1:9.9)';          % 100 puntos
+y0 = zeros(length(t), 7);  % matriz de respuestas
 
-% Señal de entrada constante para cada iteración
 for i = 1:7
-    u_valor = 0.5 + i; % Entrada: 1.5, 2.5, 3.5, ..., 7.5
-    ut = [t, u_valor * ones(size(t))];
-    
-    % Simular sistema saturado
-    [tt, xx, yy] = sim('ejemplo2', 9.9, [], ut);
-    
-    % Interpolar para alinear tiempos
-    y0(:, i) = interp1(tt, yy, t - 0.5, 'linear');
+    u = i * ones(size(t));
+    ut = [t u];
+
+    % Simulacion (una sola salida)
+    simOut = sim('ejemplo2', 'StopTime', '9.9', 'ExternalInput', 'ut');
+
+    % Tomar tiempo y salida principal
+    tt = simOut.tout;
+    yy = simOut.yout;   % si falla, en Simulink activa "Save output" en yout
+
+    % A columna e interpolar
+    tt = tt(:);
+    yy = yy(:);
+    yint = interp1(tt, yy, t, 'linear', 'extrap');
+
+    y0(:, i) = yint;
 end
 
-% Calcular estado estacionario
+% Estado estable y sobrepaso
 y0ss = y0(end, :);
+SP = 100 * (max(y0, [], 1) - y0ss) ./ y0ss;
 
-% Calcular sobrenivel porcentual (SP)
-for i = 1:7
-    y_max = max(y0(:, i));
-    SP(i) = 100 * (y_max - y0ss(i)) / y0ss(i);
-end
+% Grafica unica
+figure
+plot(t, y0, 'LineWidth', 1.2)
+grid on
+xlabel('Tiempo [s]')
+ylabel('Salida y(t)')
+title('Respuestas para u = 1..7')
+legend('u=1','u=2','u=3','u=4','u=5','u=6','u=7','Location','best')
 
-disp('Sobrenivel (%) para entradas 1.5 a 7.5:')
+disp('yss = ')
+disp(y0ss)
+disp('SP (%) = ')
 disp(SP)
-```
 
-### Preguntas y Respuestas
 
-**P1: ¿Cómo cambia la respuesta dinámica con saturación vs sin saturación?**
-R: Con saturación, la ganancia efectiva disminuye cuando la entrada es grande. El sistema se vuelve no lineal, reduciendo el sobrenivel y aumentando el tiempo de asentamiento.
+% Preguntas rapidas (resumen):
+% P1) Saturacion vs sin saturacion:
+%     Con saturacion baja la ganancia efectiva para entradas grandes,
+%     se reduce el sobreshoot y puede aumentar el tiempo de asentamiento.
+% P2) Efecto en estabilidad:
+%     Puede limitar picos, pero tambien introducir ciclos limite.
+% P3) Cerca del limite +/-1:
+%     Predominan efectos no lineales y respuestas mas lentas.
+% P4) sim con y sin Saturation:
+%     sim ejecuta el modelo como esta; el bloque cambia la dinamica.
+% P5) Relevancia practica:
+%     Los actuadores reales tienen limites de voltaje/corriente.
 
-**P2: ¿Cuál es el efecto del bloque Saturation en la estabilidad?**
-R: La saturación puede mejorar la estabilidad limitando picos de sobrenivel, pero puede causar límite-ciclos e inestabilidad si el controlador no está bien diseñado.
-
-**P3: ¿Cómo se comporta el sistema con entrada cercana al límite de saturación?**
-R: Cuando la entrada se acerca al límite (±1), el sistema opera en la zona de saturación, mostrando dinámicas no lineales pronunciadas y respuesta más lenta.
-
-**P4: ¿Qué diferencia hay entre `sim` con y sin bloque Saturation?**
-R: `sim` ejecuta el modelo tal como está definido. Sin Saturation, la salida crece indefinidamente. Con Saturation, está limitada, cambiando completamente el comportamiento dinámico.
-
-**P5: ¿Por qué es importante modelar saturación en sistemas reales?**
-R: Los actuadores reales (motores, válvulas) tienen límites de voltaje\/corriente. Ignorar saturación lleva a predicciones incorrectas y diseños deficientes de controladores.
-
-### Comando `linmod`
-
-El comando `linmod` linealiza un modelo Simulink alrededor de un punto de equilibrio:
-
-```matlab
+%% Comando linmod
 % Sintaxis: [A, B, C, D] = linmod('modelo', x_eq, u_eq)
-% Donde:
-% - x_eq: vector de estado en equilibrio
-% - u_eq: entrada en equilibrio
+% x_eq: estado de equilibrio, u_eq: entrada de equilibrio.
 
 [A, B, C, D] = linmod('ejemplo2', [], 0);
 eigenvalues = eig(A);
 disp('Valores propios:')
 disp(eigenvalues)
-```
 
-**Interpretación:**
-- Valores propios negativos → estabilidad
-- Ubicación: más negativa → respuesta más rápida
-- Presencia de saturación → linmod da aproximación local válida solo cerca del punto de operación
+% Interpretacion:
+% - Valores propios negativos: tendencia a estabilidad.
+% - Mas a la izquierda en el plano complejo: respuesta mas rapida.
+% - Con saturacion, linmod es una aproximacion local.
 
 %[appendix]{"version":"1.0"}
 %---
