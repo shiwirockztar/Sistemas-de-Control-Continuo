@@ -21,16 +21,16 @@ Este taller modela la dinámica vertical de un sistema mecánico de **dos grados
 El sistema equivale a:
 
 ```
-        ↑ x2(t)
+        ↑ Y(t)
         m2
         |
       [c] [k2]
         |
-        m1   ↑ x1(t)
+        m1   ↑ X(t)
         |
        [k1]
         |
-    y(t) = A sen(ωt)
+    U(x)(t) = A sen(ωt)
 ```
 
 La base (suelo) vibra con `y(t)`:
@@ -42,10 +42,10 @@ La base (suelo) vibra con `y(t)`:
 ## 2. Ecuaciones Diferenciales
 
 ### Para m1 (masa no suspendida):
-$$m_1 \ddot{x}_1 + c(\dot{x}_1 - \dot{x}_2) + k_2(x_1 - x_2) + k_1(x_1 - y) = 0$$
+$$m_1 \ddot{X} + c(\dot{X} - \dot{Y}) + k_2(X - Y) + k_1(X - U(x)) = 0$$
 
 ### Para m2 (masa suspendida):
-$$m_2 \ddot{x}_2 + c(\dot{x}_2 - \dot{x}_1) + k_2(x_2 - x_1) = 0$$
+$$m_2 \ddot{Y} + c(\dot{Y} - \dot{X}) + k_2(Y - X) = 0$$
 
 ---
 
@@ -53,18 +53,18 @@ $$m_2 \ddot{x}_2 + c(\dot{x}_2 - \dot{x}_1) + k_2(x_2 - x_1) = 0$$
 
 Se asume que el sistema comienza en reposo:
 
-$$x_1(0) = 0, \quad \dot{x}_1(0) = 0$$
-$$x_2(0) = 0, \quad \dot{x}_2(0) = 0$$
+$$X(0) = 0, \quad \dot{X}(0) = 0$$
+$$Y(0) = 0, \quad \dot{Y}(0) = 0$$
 
 ---
 
 ## 4. Representación en Forma de Estado
 
 ### Vector de estado:
-$$\mathbf{x} = \begin{bmatrix} x_1 \\ x_2 \\ \dot{x}_1 \\ \dot{x}_2 \end{bmatrix}$$
+$$\mathbf{x} = \begin{bmatrix} X \\ Y \\ \dot{X} \\ \dot{Y} \end{bmatrix}$$
 
 ### Ecuación de estado:
-$$\dot{\mathbf{x}} = A\mathbf{x} + B y(t)$$
+$$\dot{\mathbf{x}} = A\mathbf{x} + B U(x)(t)$$
 
 ### Matriz A:
 $$A = \begin{bmatrix} 
@@ -79,7 +79,7 @@ $$B = \begin{bmatrix} 0 \\ 0 \\ \frac{k_1}{m_1} \\ 0 \end{bmatrix}$$
 
 ### Matriz C (salida):
 $$C = \begin{bmatrix} 0 & 1 & 0 & 0 \end{bmatrix}$$
-(observando la posición del chasis `x2`)
+(observando la posición del chasis `Y`)
 
 ### Matriz D:
 $$D = 0$$
@@ -89,13 +89,13 @@ $$D = 0$$
 ## 5. Función de Transferencia
 
 ### Entrada:
-- `y(t)`: desplazamiento de base
+- `U(x)(t)`: desplazamiento de base (perfil del camino)
 
 ### Salida típica:
-- `x2(t)`: movimiento del chasis
+- `Y(t)`: movimiento del chasis
 
 ### Función de transferencia:
-$$\frac{X_2(s)}{Y(s)} = \frac{k_1 k_2(m_1 s^2 + cs + k_1 + k_2)}{(m_1 s^2 + cs + k_1 + k_2)(m_2 s^2 + cs + k_2) - (cs + k_2)^2}$$
+$$\frac{Y(s)}{U(x)(s)} = \frac{k_1 k_2(m_1 s^2 + cs + k_1 + k_2)}{(m_1 s^2 + cs + k_1 + k_2)(m_2 s^2 + cs + k_2) - (cs + k_2)^2}$$
 
 **Nota:** Este es un sistema de 4º orden.
 
