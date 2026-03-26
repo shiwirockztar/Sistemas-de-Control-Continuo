@@ -151,12 +151,12 @@ import numpy as np
 from scipy.signal import StateSpace, lsim
 import matplotlib.pyplot as plt
 
-% Parámetros del sistema
+# Parámetros del sistema
 m1, m2 = 10, 50
 k1, k2 = 1000, 1500
 c = 100
 
-% Matrices de estado
+# Matrices de estado
 A = [[0, 0, 1, 0],
      [0, 0, 0, 1],
      [-(k1+k2)/m1, k2/m1, -c/m1, c/m1],
@@ -166,21 +166,24 @@ B = [[0], [0], [k1/m1], [0]]
 C = [[0, 1, 0, 0]]
 D = [[0]]
 
-% Sistema en espacio de estado
+# Sistema
 sys = StateSpace(A, B, C, D)
 
-% Señal de entrada (excitación de base)
+# Entrada
 t = np.linspace(0, 10, 1000)
 y = np.sin(2*t)
 
-% Simulación
+# Simulación
 t, response, _ = lsim(sys, y, t)
 
-% Gráfica
-plt.plot(t, response)
+# 🔥 Gráfica comparativa
+plt.plot(t, response, label="Salida x2(t) (chasis)")
+plt.plot(t, y, '--', label="Entrada y(t) (terreno)")
+
 plt.xlabel("Tiempo (s)")
-plt.ylabel("x2(t) (m)")
-plt.title("Respuesta del Chasis a Excitación de Base")
+plt.ylabel("Amplitud")
+plt.title("Comparación: Entrada vs Respuesta del Sistema")
+plt.legend()
 plt.grid(True)
 plt.show()
 ```
