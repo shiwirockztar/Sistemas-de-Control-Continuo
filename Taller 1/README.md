@@ -61,10 +61,8 @@ x_1(0)=0,\quad \dot{x}\_1(0)=0,\quad x_2(0)=0,\quad \dot{x}\_2(0)=0
 Definiendo:
 
 \[
-\mathbf{x} = \begin{bmatrix} x_1 \\ x_2 \end{bmatrix},
-\quad
-\dot{\mathbf{x}} = \begin{bmatrix} \dot{x}\_1 \\ \dot{x}\_2 \end{bmatrix},
-\quad
+\mathbf{x} = \begin{bmatrix} x_1 \\ x_2 \end{bmatrix}, \quad
+\dot{\mathbf{x}} = \begin{bmatrix} \dot{x}\_1 \\ \dot{x}\_2 \end{bmatrix}, \quad
 \ddot{\mathbf{x}} = \begin{bmatrix} \ddot{x}\_1 \\ \ddot{x}\_2 \end{bmatrix}
 \]
 
@@ -126,3 +124,28 @@ k_1 y(t) \\
 ## Nota
 
 Si en el taller se usan valores numericos especificos de `m1`, `m2`, `k1`, `k2`, `c`, `A` y `omega`, agregalos en una tabla para facilitar la reproduccion de resultados.
+
+## Interpretacion de graficas
+
+La simulacion entrega dos bloques de resultados principales:
+
+1. **Perfil del camino `u(x)` vs espacio `x`**  
+   Esta grafica representa la irregularidad de la via que excita el sistema.  
+   Es una entrada espacial, no temporal; por eso se convierte a `y(t)` usando la relacion `x(t)=v t`.
+
+2. **Respuesta temporal `y(t)`, `x1(t)` y `x2(t)`**
+
+- `y(t)`: entrada de base (camino visto en el tiempo).
+- `x1(t)`: desplazamiento de la masa no suspendida (rueda/eje).
+- `x2(t)`: desplazamiento de la masa suspendida (chasis).
+
+En general, `x1(t)` presenta variaciones mas rapidas y de mayor contenido en alta frecuencia, mientras que `x2(t)` es mas suave por efecto del amortiguamiento y la suspension.  
+ Si la amplitud de `x2(t)` es menor que la de `x1(t)`, el sistema esta cumpliendo su funcion de aislamiento de vibraciones.
+
+3. **Error de validacion (FT vs ODE)**  
+   Se grafica `x1_FT - x1_ODE` y `x2_FT - x2_ODE`.  
+   Valores cercanos a cero indican consistencia entre el enfoque por funcion de transferencia y el modelo en ecuaciones diferenciales, validando la implementacion numerica.
+
+### Mensaje tecnico clave del taller
+
+El modelo por funcion de transferencia permite describir la dinamica del sistema 2 GDL ante excitacion de base, y los resultados muestran como la suspension atenúa la vibracion transmitida al chasis (`x2`) respecto a la masa no suspendida (`x1`).
