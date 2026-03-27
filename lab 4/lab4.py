@@ -33,17 +33,59 @@ def connect_lab(force_sim=False, speedup=10):
         return TCLab(), True
 
 
-def run_experiment(sim=False, duration_min=6.2):
-    # Parametros del proceso y controlador PID
+def compute_controller_params(mode, tuning, kc_factor, taup, tethap, ku=None, pu=None):
+    """Calcula Kc, tau_i y tau_d segun modo y regla de sintonia."""
+    if tuning == "itae":
+        kc_base = 0.2 * (taup / tethap) ** 1.22
+        tau_i = 175.0
+        tau_d = 5.0
+    elif tuning == "zn":
+        if ku is None or pu is None or ku <= 0.0 or pu <= 0.0:
+            raise ValueError("Para tuning='zn' debes pasar --ku y --pu mayores que cero.")
+        kc_base = 0.6 * ku
+        tau_i = 0.5 * pu
+        tau_d = 0.125 * pu
+    else:
+        raise ValueError("Tuning no soportado. Usa 'itae' o 'zn'.")
+
+    kc = kc_base * kc_factor
+    if mode == "p":
+        tau_i = None
+        tau_d = None
+
+    return kc, tau_i, tau_d
+
+
+def run_experiment(
+    sim=False,
+    duration_min=6.2,
+    mode="p",
+    tuning="itae",
+    kc_factor=1.0,
+    ku=None,
+    pu=None,
+):
+    # Parametros del proceso
     taup = 111.0140
     tethap = 23.4411
-    kc = 0.2 * (taup / tethap) ** 1.22
-    tau_i = 175.0
-    tau_d = 5.0
+
+    kc, tau_i, tau_d = compute_controller_params(
+        mode=mode,
+        tuning=tuning,
+        kc_factor=kc_factor,
+        taup=taup,
+        tethap=tethap,
+        ku=ku,
+        pu=pu,
+    )
+
     q_bias = 0.0
 
     lab, is_sim = connect_lab(force_sim=sim, speedup=10)
     print("Modo simulacion." if is_sim else "Modo hardware real.")
+    print(f"Controlador: {mode.upper()} | Sintonia: {tuning.upper()} | Kc={kc:.5f}")
+    if mode == "pid":
+        print(f"tau_i={tau_i:.5f} s | tau_d={tau_d:.5f} s")
 
     ciclos = int(60 * duration_min)
     t_array = np.zeros(ciclos)
@@ -82,20 +124,21 @@ def run_experiment(sim=False, duration_min=6.2):
 
             error1 = tset1[i] - t1[i]
 
-            error1_int += error1 * dt
-
             deriv1 = (error1 - prev_error1) / dt if dt > 1e-9 else 0.0
             prev_error1 = error1
 
-            # u1 = q_bias + kc * error1 + (kc / tau_i) * error1_int + kc * tau_d * deriv1 # PID sin filtro derivativo
-            # kc se varia con el proceso, pero tau_i y tau_d se pueden ajustar para mejorar la respuesta.
-            # para calcular los parametros del PID se puede usar la formula de Ziegler-Nichols, pero es recomendable ajustar manualmente para mejorar el desempeño.
-            u1 = q_bias + kc * error1 # P puro, para comparar con el PID completo
+            if mode == "pid":
+                error1_int += error1 * dt
+                # PID sin filtro derivativo.
+                u1 = q_bias + kc * error1 + (kc / tau_i) * error1_int + kc * tau_d * deriv1
+            else:
+                # P puro, para comparar con el PID completo.
+                u1 = q_bias + kc * error1
 
             q1[i] = clamp_0_100(u1)
 
             # Anti-windup simple: revierte la integral cuando la salida satura.
-            if q1[i] != u1:
+            if mode == "pid" and q1[i] != u1:
                 error1_int -= error1 * dt
 
             lab.Q1(q1[i])
@@ -136,14 +179,19 @@ def run_experiment(sim=False, duration_min=6.2):
             pass
 
         n = i_last + 1
-        save_txt(t_array[:n], q1[:n], t1[:n], tset1[:n])
-        plt.savefig("resultado_PID_Q1.png", dpi=150, bbox_inches="tight")
-        print("Datos guardados en data_PID_Q1.txt")
-        print("Figura guardada en resultado_PID_Q1.png")
+        tag = f"{mode}_{tuning}_kcf{kc_factor:.2f}".replace(".", "p")
+        data_file = f"data_Q1_{tag}.txt"
+        fig_file = f"resultado_Q1_{tag}.png"
+        save_txt(t_array[:n], q1[:n], t1[:n], tset1[:n], filename=data_file)
+        plt.savefig(fig_file, dpi=150, bbox_inches="tight")
+        print(f"Datos guardados en {data_file}")
+        print(f"Figura guardada en {fig_file}")
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="PID para TCLab (Lab 4) - solo Q1")
+    parser = argparse.ArgumentParser(
+        description="Control P/PID para TCLab (Lab 4) - solo Q1"
+    )
     parser.add_argument(
         "--sim",
         action="store_true",
@@ -155,9 +203,49 @@ def parse_args():
         default=6.2,
         help="Duracion del experimento en minutos (default: 6.2).",
     )
+    parser.add_argument(
+        "--mode",
+        type=str,
+        choices=["p", "pid"],
+        default="p",
+        help="Modo de control: p o pid (default: p).",
+    )
+    parser.add_argument(
+        "--tuning",
+        type=str,
+        choices=["itae", "zn"],
+        default="itae",
+        help="Regla de sintonia: itae o zn (default: itae).",
+    )
+    parser.add_argument(
+        "--kc-factor",
+        type=float,
+        default=1.0,
+        help="Factor multiplicativo de Kc para barrido (default: 1.0).",
+    )
+    parser.add_argument(
+        "--ku",
+        type=float,
+        default=None,
+        help="Ganancia critica para Ziegler-Nichols (requerida si --tuning zn).",
+    )
+    parser.add_argument(
+        "--pu",
+        type=float,
+        default=None,
+        help="Periodo critico para Ziegler-Nichols en segundos (requerido si --tuning zn).",
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    run_experiment(sim=args.sim, duration_min=args.min)
+    run_experiment(
+        sim=args.sim,
+        duration_min=args.min,
+        mode=args.mode,
+        tuning=args.tuning,
+        kc_factor=args.kc_factor,
+        ku=args.ku,
+        pu=args.pu,
+    )
