@@ -1,92 +1,133 @@
-# Lab 4 - Control de temperatura (solo Q1)
+# Lab 4 - Control P/PID en TempLABUdeA
 
-Este laboratorio implementa un controlador para el sistema TCLab usando **solo el calentador Q1** y la temperatura **T1**.
+Este documento resume que se esta haciendo en el codigo y que se debe entregar en la practica.
 
-## 1) Que hace el codigo `lab4.py`
+## Objetivos de la practica
 
-- Se conecta al TCLab real (o simulacion con `--sim`).
-- Define un setpoint fijo para T1 (`tset1 = 23.0 C`).
-- Ejecuta un lazo de control cada segundo.
-- Calcula la accion de control `u1` y la aplica a Q1 (saturada entre 0 y 100%).
-- Guarda resultados en `data_PID_Q1.txt` y una figura en `resultado_PID_Q1.png`.
+1. Desarrollar el modelo dinamico continuo de primer orden para cada zona termica, considerando conduccion, conveccion y radiacion.
+2. Disenar y sintonizar controladores PID independientes para cada secuencia de temperatura, asegurando estabilidad y desempeno especificado.
+3. Implementar el controlador en TempLABUdeA y validar el comportamiento experimental frente al modelo teorico.
 
-## 2) Lo mas importante: que piden en las lineas 90 a 93
+## Codigo actual y alcance
 
-En ese bloque se compara:
+El script [lab4.py](lab4.py) en esta carpeta esta enfocado en lazo para Q1/T1 y permite comparar P-only contra PID en el calculo de la accion de control.
 
-- **Control PID completo** (comentado en la linea 90):
+- Lee temperatura medida T1.
+- Calcula error e(t) = TSP - TPV(t).
+- Aplica Q1 con saturacion 0 a 100 %.
+- Registra datos en archivo y genera grafica final.
 
-  ```python
-  u1 = q_bias + kc * error1 + (kc / tau_i) * error1_int + kc * tau_d * deriv1
-  ```
+## Procedimiento A - Cuantificacion de offset con P-only
 
-- **Control P puro** (activo en la linea 93):
+### Modelo de control P-only
 
-  ```python
-  u1 = q_bias + kc * error1
-  ```
+Se usa:
 
-### Interpretacion de la tarea
+$$Q(t) = Q_{bias} + K_c e(t), \quad e(t)=TSP-TPV(t)$$
 
-Lo que normalmente te piden es:
+Con este enfoque, en un proceso no integrador aparece error en estado estacionario:
 
-1. Usar parametros iniciales tipo Ziegler-Nichols para el PID.
-2. **Variar `kc`** para observar como cambia la respuesta del sistema.
-3. Comparar desempeno entre P puro y PID completo.
+$$e_{\infty} = TSP - TPV_{\infty}$$
 
-## 3) Como variar `kc` correctamente
+En TempLABUdeA se toma normalmente $Q_{bias}=0$ al pasar de manual a automatico.
 
-En `run_experiment`, `kc` se define al inicio:
+### Sintonia inicial P-only (ITAE)
 
-```python
-kc = 0.2 * (taup / tethap) ** 1.22
-```
+Usar como punto de partida:
 
-Para hacer el analisis, prueba varios valores alrededor de ese `kc` nominal:
+$$K_c = 0.20\left(\frac{\tau_p}{\theta_p}\right)^{1.22}$$
 
-- `0.5 * kc_nominal`
-- `0.8 * kc_nominal`
-- `1.0 * kc_nominal`
-- `1.2 * kc_nominal`
-- `1.5 * kc_nominal`
+Luego ejecutar y medir $e_{\infty}$ experimental.
 
-Manteniendo `tau_i` y `tau_d` fijos al inicio (segun tu sintonia base), evalua:
+## Procedimiento B - PID por Ziegler-Nichols
 
-- tiempo de subida,
-- sobreimpulso,
-- tiempo de establecimiento,
-- error en estado estacionario,
-- saturacion de Q1.
+1. Configurar lazo cerrado con accion proporcional pura (I=0, D=0).
+2. Aumentar $K_c$ hasta oscilaciones sostenidas.
+3. Medir:
+   Ku = ganancia critica.
+   Pu = periodo de oscilacion.
+4. Calcular parametros PID:
 
-## 4) Flujo recomendado para la practica
+$$K_p = 0.6Ku, \quad T_i = 0.5Pu, \quad T_d = 0.125Pu$$
 
-1. Ejecuta con **P puro** (linea 93 activa, linea 90 comentada).
-2. Repite variando `kc` y guarda resultados.
-3. Cambia a **PID completo** (linea 90 activa, linea 93 comentada).
-4. Repite la misma variacion de `kc`.
-5. Compara curvas T1 y Q1 para justificar cual ajuste funciona mejor.
+5. Implementar:
 
-## 5) Ejecucion
+$$u(t) = K_p\left[e(t) + \frac{1}{T_i}\int_0^t e(\tau)d\tau + T_d\frac{de}{dt}\right]$$
 
-En la carpeta `lab 4`:
+## Lo que se pide especificamente en lineas 90 a 93
+
+En [lab4.py](lab4.py#L90) a [lab4.py](lab4.py#L93) esta el punto clave de la practica:
+
+- [lab4.py](lab4.py#L90): formula PID completa (actualmente comentada).
+- [lab4.py](lab4.py#L93): formula P-only activa para comparacion.
+
+Trabajo solicitado sobre ese bloque:
+
+1. Ejecutar pruebas con la ecuacion P-only (linea 93) y variar $K_c$.
+2. Activar la ecuacion PID (linea 90), desactivar P-only y repetir barrido de $K_c$.
+3. Usar parametros de Ziegler-Nichols como base y ajustar fino si hace falta.
+4. Comparar P vs PID con metricas transitorias y estacionarias.
+
+Sugerencia de barrido de ganancia:
+
+- $0.5K_{c,nom}$
+- $0.8K_{c,nom}$
+- $1.0K_{c,nom}$
+- $1.2K_{c,nom}$
+- $1.5K_{c,nom}$
+
+## Implementacion practica
+
+1. Cargar firmware base en Arduino.
+2. Ejecutar script Python para adquisicion y control.
+3. Registrar tiempo, temperatura y potencia en CSV/TXT.
+4. Hacer pruebas de escalon y distintas consignas.
+
+Comando de ejecucion (simulacion):
 
 ```bash
 python3 lab4.py --sim --min 6.2
 ```
 
-Sin `--sim`, el script intentara usar hardware real.
+## Validacion y analisis
 
-## 6) Entregable sugerido
+Comparar respuesta experimental y simulada usando:
 
-Incluye una tabla como esta para cada prueba:
+- Sobreimpulso (%).
+- Tiempo de asentamiento.
+- Error en estado estacionario.
 
-| Modo | kc usado | tau_i | tau_d | Sobreimpulso | t_establecimiento | Error final |
-|---|---:|---:|---:|---:|---:|---:|
-| P | ... | - | - | ... | ... | ... |
-| PID | ... | ... | ... | ... | ... | ... |
+Discutir discrepancias (modelo, parametros, ruido, saturacion) y proponer ajustes.
 
-Y concluye:
+## Resultados de aprendizaje
 
-- que efecto tuvo aumentar/disminuir `kc`,
-- en que punto el sistema mejora,
-- cuando empieza a oscilar o saturar.
+Al finalizar, se espera que el estudiante pueda:
+
+1. Modelar sistemas termicos de primer orden y derivar funciones de transferencia.
+2. Disenar, simular e implementar controladores P/PID en sistema real.
+3. Evaluar desempeno con indicadores clasicos de control.
+
+## Entregables
+
+1. Documento tecnico con:
+   - Derivacion del modelo y funciones de transferencia.
+   - Calculo y justificacion de parametros del controlador.
+   - Comparacion grafica y cuantitativa entre simulacion y experimento.
+2. Codigo fuente del controlador y scripts de adquisicion.
+3. Datos crudos (CSV/TXT) y graficas finales.
+
+## Rubrica (resumen)
+
+| Criterio | 0 | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|---|
+| Precision del modelo | Ausente | Erroneo | Parcial | Funcional basico | Bueno | Excelente |
+| Sintonia PID | Ausente | Incorrecta | Suboptima | Aceptable | Buena | Optima |
+| Comparacion sim/exp | N/D | >25 % | 20-25 % | 15-20 % | 10-15 % | <10 % |
+| Calidad de informe y codigo | Ausente | Muy deficiente | Deficiente | Aceptable | Buena | Excelente |
+
+## Recomendaciones tecnicas
+
+- Inicializar siempre $Q_{bias}$ e integral en cero.
+- Mantener periodo de muestreo aproximadamente constante.
+- Implementar anti-windup al saturar actuador.
+- Cerrar en forma segura: $Q1=0$, $Q2=0$ y cierre de conexion.
