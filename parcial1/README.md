@@ -117,3 +117,35 @@ $$
 $$
 \omega_n = \sqrt{\frac{2k}{8m+3M}}
 $$
+
+## Funcion de transferencia
+
+La ecuacion obtenida corresponde a vibracion libre. Para definir funcion de transferencia se considera una fuerza externa de entrada $F(t)$ aplicada sobre la coordenada $x$:
+
+$$
+\left(m+\frac{3}{8}M\right)\ddot{x}+\frac{1}{4}kx = F(t)
+$$
+
+Aplicando transformada de Laplace con condiciones iniciales cero:
+
+$$
+\left[\left(m+\frac{3}{8}M\right)s^2+\frac{1}{4}k\right]X(s)=F(s)
+$$
+
+Por tanto, la funcion de transferencia desplazamiento-fuerza es:
+
+$$
+G(s)=\frac{X(s)}{F(s)}=\frac{1}{\left(m+\frac{3}{8}M\right)s^2+\frac{1}{4}k}
+$$
+
+Forma equivalente:
+
+$$
+G(s)=\frac{8}{(8m+3M)s^2+2k}
+$$
+
+Forma estandar de segundo orden:
+
+$$
+G(s)=\frac{1}{m_{eq}}\frac{1}{s^2+\omega_n^2}, \quad m_{eq}=m+\frac{3}{8}M
+$$
