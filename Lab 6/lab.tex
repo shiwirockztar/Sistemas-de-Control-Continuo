@@ -1,0 +1,229 @@
+\documentclass[letterpaper,12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage{hyperref}
+\geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+
+\setlength{\parskip}{0.7em}
+\setlength{\parindent}{0pt}
+
+\graphicspath{{figures/}}
+
+\begin{document}
+
+
+% ===================== PORTADA =====================
+
+\begin{center}
+\textsc{Universidad de Antioquia\\
+Facultad de Ingeniería\\
+Departamento de Ingeniería Electrónica\\
+Sistemas de Control Continuo}
+
+\vspace{1.2cm}
+
+\includegraphics[height=2.5cm]{udea.png}
+
+\vspace{0.8cm}
+
+{\LARGE \textbf{TempControlLab UdeA: Control PID del sistema térmico}}\\
+
+\vspace{1cm}
+
+\textbf{Luis Alberto Ardila Páez}\\
+\textbf{Daniel Esteban Tirado Rojas}\\
+\textbf{Jose Leonardo Perez Poveda}
+\end{center}
+
+\vspace{1cm}
+\newpage
+
+\section{Introducción}
+En esta actividad se usa la planta TempLABUdeA, cuyo modelo linealizado por zona térmica se representa como:
+\begin{equation}
+G(s)=\frac{K}{\tau s+1}e^{-\theta_d s}
+\end{equation}
+donde $K$ y $\tau$ se obtienen por linealización y $\theta_d$ representa el retardo de transporte. El objetivo del laboratorio es diseñar un controlador PID que cumpla especificaciones de sobreimpulso, tiempo de asentamiento y margen de fase usando el Lugar Geométrico de las Raíces (LGR).
+
+\section{Objetivos de la actividad}
+\begin{enumerate}
+    \item Aplicar el LGR para ubicar polos de lazo cerrado en posiciones deseadas.
+    \item Determinar los parámetros $K_p$, $T_i$ y $T_d$ de un PID que satisfaga especificaciones de desempeño.
+    \item Verificar por simulación (Python/MATLAB) la respuesta al escalón y la estabilidad del sistema controlado.
+\end{enumerate}
+
+\section*{Parámetros del sistema}
+Los parámetros utilizados en este laboratorio para la zona térmica analizada (TempLABUdeA) son:
+\begin{itemize}
+    \item $K = 0.293$ (ganancia estática de la planta)
+    \item Retardo de transporte: $L = 12.6\ \mathrm{s}$
+    \item Constante de tiempo: $\tau = 169\ \mathrm{s}$
+    \item Ganancia de diseño inicial (referencia): $K_c = 500$
+\end{itemize}
+
+Para el análisis por LGR se omite el retardo en el trazado inicial; posteriormente, en la simulación temporal del lazo cerrado, se incorpora con aproximación de Pade de primer orden.
+
+\section{Función de transferencia en lazo abierto}
+Partiendo de la ecuación del controlador PID:
+\begin{equation}
+G_{PID}(s) = K_p \left( 1 + \frac{1}{T_i s} + T_d s \right) 
+\end{equation}
+Se busca obtener un denominador común, sumando los términos dentro del paréntesis, lo que resulta en:
+\begin{equation}
+G_{PID}(s) = K_p \left( \frac{T_i T_d s^2 + T_i s + 1}{T_i s} \right)
+\end{equation}
+El modelo linealizado de la planta térmica, omitiendo el retardo de tiempo para el análisis inicial por el Lugar Geométrico de las Raíces, está dado por:
+\begin{equation}
+G(s) = \frac{K}{\tau s + 1}
+\end{equation}
+Al multiplicar el controlador por la planta, se verifica que la función de transferencia en lazo abierto $L(s) = G_{PID}(s)G(s)$ equivale a:
+\begin{equation}
+L(s) = K_p \frac{K(T_i T_d s^2 + T_i s + 1)}{T_i s(\tau s + 1)} 
+\end{equation}
+
+\section{Trazado del Lugar Geométrico de las Raíces}
+El análisis por el Lugar Geométrico de las Raíces (LGR) consiste en observar el recorrido de los polos de lazo cerrado al variar la ganancia $K_p$ de la función $L(s)$. Para este trazado analítico inicial, se utilizan valores provisionales para las constantes de tiempo del controlador, tales como $T_i = \tau$ y $T_d = \tau/10$. 
+
+Con $K=0.293$, $\tau=169\,\mathrm{s}$ y los valores provisionales $T_i=\tau$, $T_d=\tau/10$, se obtuvo el LGR mostrado en la Figura~\ref{fig:lgr}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{lgr_lab6.png}
+    \caption{Lugar Geométrico de las Raíces para el modelo sin retardo explícito en el trazado.}
+    \label{fig:lgr}
+\end{figure}
+
+\section{Selección de polos deseados}
+Para cumplir con los criterios de desempeño, se requieren las siguientes especificaciones: un porcentaje de sobreimpulso ($\%OS$) del $10\%$ y un tiempo de asentamiento ($T_s$) de $2$ minutos, equivalentes a $120$ segundos.
+
+A partir del porcentaje de sobreimpulso, se relaciona y despeja el coeficiente de amortiguamiento $\zeta$:
+\begin{equation}
+\%OS \approx 100 e^{-\frac{\zeta \pi}{\sqrt{1 - \zeta^2}}} 
+\end{equation}
+\begin{equation}
+10 = 100 e^{-\frac{\zeta \pi}{\sqrt{1 - \zeta^2}}} \implies \ln(0.10) = -\frac{\zeta \pi}{\sqrt{1 - \zeta^2}}
+\end{equation}
+Resolviendo esta ecuación, se obtiene un valor de $\zeta \approx 0.591$.
+
+Luego, se relaciona el tiempo de asentamiento con la parte real del polo dominante para calcular la frecuencia natural $\omega_n$:
+\begin{equation}
+T_s \approx \frac{4}{\zeta \omega_n}
+\end{equation}
+\begin{equation}
+120 = \frac{4}{0.591 \omega_n} \implies \omega_n = \frac{4}{120 \times 0.591} \approx 0.0564 \text{ rad/s}
+\end{equation}
+
+Con $\zeta$ y $\omega_n$ definidos, se determina la ubicación exacta de los polos dominantes deseados ($s_d$):
+\begin{equation}
+s_{1,2} = -\zeta \omega_n \pm j \omega_n \sqrt{1 - \zeta^2}  
+\end{equation}
+\begin{equation}
+s_{1,2} = -0.0333 \pm j 0.0455
+\end{equation}
+
+\section{Cálculo de $K_p$, $T_i$, $T_d$}
+Para garantizar que el lugar geométrico contenga el polo dominante deseado $s_d = -0.0333 + j 0.0455$, se imponen dos condiciones sobre la función de lazo abierto evaluada en dicho punto.
+
+\textbf{1. Condición de fase:}
+Se debe cumplir que el ángulo evaluado en $s_d$ sea múltiplo impar de $180^\circ$:
+\begin{equation}
+\angle L(s_d) = -180^{\circ}  
+\end{equation}
+Esto implica evaluar la fase de la función racional:
+\begin{equation}
+\angle \left( \frac{T_i T_d s_d^2 + T_i s_d + 1}{s_d (\tau s_d + 1)} \right) = -180^{\circ}  
+\end{equation}
+
+\textbf{2. Condición de módulo:}
+Se exige que la magnitud sea unitaria en $s_d$:
+\begin{equation}
+|L(s_d)| = 1 \iff K_p K \frac{|T_i T_d s_d^2 + T_i s_d + 1|}{T_i |s_d| |\tau s_d + 1|} = 1  
+\end{equation}
+Al resolver numéricamente y refinar por simulación (incluyendo retardo $L=12.6\,\mathrm{s}$ con aproximación de Pade de primer orden), se obtuvo un conjunto de parámetros PID que cumple las especificaciones:
+
+\begin{itemize}
+    \item $K_p = 53.8224$
+    \item $T_i = 60.5786\ \mathrm{s}$
+    \item $T_d = 6.1876\ \mathrm{s}$
+\end{itemize}
+
+El procedimiento computacional completo se implementó en el notebook unificado \texttt{Lab 6/lab6\_unificado\_colab.ipynb}, donde se incluyen: (i) resolución numérica de ecuaciones en el polo deseado, (ii) trazado de LGR, (iii) ajuste por optimización y (iv) simulación al escalón con cálculo de métricas.
+
+\section{Simulación y verificación}
+Con los parámetros $K_p$, $T_i$, $T_d$ calculados, se define la función de transferencia en lazo cerrado:
+\begin{equation}
+G_{cl}(s) = \frac{L(s)}{1 + L(s)}  
+\end{equation}
+La simulación al escalón unitario se realizó en Python con \texttt{control}, modelando el retardo de transporte mediante Pade(1,1). Los resultados obtenidos son:
+
+\begin{itemize}
+    \item Sobreimpulso: $\%OS = 10.0000\%$
+    \item Tiempo de asentamiento ($2\%$): $T_s = 120.0200\ \mathrm{s}$
+    \item Margen de fase: $PM = 52.7758^{\circ}$
+    \item Estabilidad del lazo cerrado: estable (todos los polos con parte real negativa)
+\end{itemize}
+
+Estos valores satisfacen las metas del laboratorio ($\%OS\approx 10\%$, $T_s\approx 120\,\mathrm{s}$ y margen de fase adecuado).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{step_lab6.png}
+    \caption{Respuesta al escalón del sistema en lazo cerrado con PID ajustado.}
+    \label{fig:step}
+\end{figure}
+
+\section{Implementación en TempLABUdeA}
+Para aplicar el controlador en la planta física, la ley de control se adapta a tiempo discreto. La ley general en tiempo continuo es:
+\begin{equation}
+Q(t) = Q_{bias} + K_p e(t) + \frac{K_p}{T_i} \int_{0}^{t} e(\tau) d\tau + K_p T_d \frac{de}{dt}  
+\end{equation}
+
+En el código, la derivada del error se aproxima discretamente mediante:
+\begin{equation}
+\frac{de}{dt} \approx \frac{e(k) - e(k-1)}{\Delta t}  
+\end{equation}
+
+Finalmente, para contrarrestar el fenómeno de windup debido a la acumulación del error integral cuando el sistema se satura, se aplica un mecanismo que ajusta el integrador restando el error de dicho ciclo de cálculo:
+\begin{itemize}
+    \item Si $Q = 100$, \texttt{ierr -= err}  
+    \item Si $Q = 0$, \texttt{ierr -= err}  
+\end{itemize}
+
+Para la parte experimental en TempLABUdeA, quedan como evidencias a anexar las series temporales medidas $T_1(t)$ y $Q_1(t)$ en formato \texttt{.csv} y su comparación directa con la simulación de la Figura~\ref{fig:step}.
+
+\section{Entregables y evaluación}
+Con la documentación actual, se cumple:
+\begin{itemize}
+    \item Trazado del LGR y selección de polos dominantes.
+    \item Cálculo paso a paso de $K_p$, $T_i$, $T_d$.
+    \item Gráficas de LGR y respuesta al escalón simulada.
+    \item Implementación computacional en notebook: \texttt{Lab 6/lab6\_unificado\_colab.ipynb}.
+\end{itemize}
+
+Para completar el cierre experimental del laboratorio, falta anexar:
+\begin{itemize}
+    \item Datos experimentales de TempLABUdeA (archivos \texttt{.csv} con $T_1(t)$ y $Q_1(t)$).
+    \item Gráfica comparativa experimento vs simulación con los mismos ejes y condiciones iniciales.
+\end{itemize}
+
+\section*{Referencias}
+
+\begin{enumerate}
+    \item Alfaro, V. M. (2001). \textit{Identificación de procesos sobreamortiguados utilizando técnicas de lazo abierto}. Revista Ingeniería, 11(1--2), 11--25.
+
+    \item TCLab Documentation. (2026). \textit{Temperature Control Lab (TCLab) Documentation}. Disponible en: \url{https://tclab.readthedocs.io/}
+
+    \item Ogata, K. (2010). \textit{Ingeniería de control moderna} (5ª ed.). Pearson Educación.
+
+    \item Åström, K. J., \& Hägglund, T. (1995). \textit{PID Controllers: Theory, Design, and Tuning}. Instrument Society of America.
+
+    \item Ziegler, J. G., \& Nichols, N. B. (1942). \textit{Optimum settings for automatic controllers}. Transactions of the ASME, 64, 759--768.
+\end{enumerate}
+
+\end{document}
