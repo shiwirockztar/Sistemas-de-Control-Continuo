@@ -88,9 +88,9 @@ L(s) = K_p \frac{K(T_i T_d s^2 + T_i s + 1)}{T_i s(\tau s + 1)}
 \end{equation}
 
 \section{Trazado del Lugar Geométrico de las Raíces}
-El análisis por el Lugar Geométrico de las Raíces (LGR) consiste en observar el recorrido de los polos de lazo cerrado al variar la ganancia $K_p$ de la función $L(s)$. Para este trazado analítico inicial, se utilizan valores provisionales para las constantes de tiempo del controlador, tales como $T_i = \tau$ y $T_d = \tau/10$. 
+El análisis por el Lugar Geométrico de las Raíces (LGR) consiste en observar el recorrido de los polos de lazo cerrado al variar la ganancia $K_p$ de la función $L(s)$. Para este trazado analítico inicial, se utilizan valores provisionales para las constantes de tiempo del controlador, tales como $T_i = \tau$ y $T_d = \tau/4$. 
 
-Con $K=0.293$, $\tau=169\,\mathrm{s}$ y los valores provisionales $T_i=\tau$, $T_d=\tau/10$, se obtuvo el LGR mostrado en la Figura~\ref{fig:lgr}.
+Con $K=0.293$, $\tau=169\,\mathrm{s}$ y los valores provisionales $T_i=\tau$, $T_d=\tau/4$, se obtuvo el LGR mostrado en la Figura~\ref{fig:lgr}.
 
 \begin{figure}[H]
     \centering
@@ -145,15 +145,17 @@ Se exige que la magnitud sea unitaria en $s_d$:
 \begin{equation}
 |L(s_d)| = 1 \iff K_p K \frac{|T_i T_d s_d^2 + T_i s_d + 1|}{T_i |s_d| |\tau s_d + 1|} = 1  
 \end{equation}
-Al resolver numéricamente y refinar por simulación (incluyendo retardo $L=12.6\,\mathrm{s}$ con aproximación de Pade de primer orden), se obtuvo un conjunto de parámetros PID que cumple las especificaciones:
+En la implementación del notebook, el ajuste final se realizó mediante \textbf{interpolación}: se construyó una malla de valores $(K_p,T_i,T_d)$, se calcularon para cada punto las métricas $(\%OS, T_s, PM)$ y luego se interpoló en el espacio de especificaciones para aproximar el objetivo $(\%OS=10\%,\ T_s=120\,\mathrm{s})$ con restricción $PM\ge 45^\circ$.
+
+Con este procedimiento (y validación posterior por simulación con retardo $L=12.6\,\mathrm{s}$ aproximado por Pade de primer orden), se obtuvo el siguiente conjunto de parámetros PID:
 
 \begin{itemize}
-    \item $K_p = 53.8224$
-    \item $T_i = 60.5786\ \mathrm{s}$
-    \item $T_d = 6.1876\ \mathrm{s}$
+    \item $K_p = 36.822471$
+    \item $T_i = 116.287302\ \mathrm{s}$
+    \item $T_d = 2.899797\ \mathrm{s}$
 \end{itemize}
 
-El procedimiento computacional completo se implementó en el notebook unificado \texttt{Lab 6/lab6\_unificado\_colab.ipynb}, donde se incluyen: (i) resolución numérica de ecuaciones en el polo deseado, (ii) trazado de LGR, (iii) ajuste por optimización y (iv) simulación al escalón con cálculo de métricas.
+El procedimiento computacional completo se implementó en el notebook unificado \texttt{Lab 6/Lab6\_codigo.ipynb}, donde se incluyen: (i) resolución numérica de ecuaciones en el polo deseado, (ii) trazado de LGR, (iii) ajuste por interpolación y (iv) simulación al escalón con cálculo de métricas.
 
 \section{Simulación y verificación}
 Con los parámetros $K_p$, $T_i$, $T_d$ calculados, se define la función de transferencia en lazo cerrado:
@@ -165,7 +167,7 @@ La simulación al escalón unitario se realizó en Python con \texttt{control}, 
 \begin{itemize}
     \item Sobreimpulso: $\%OS = 10.0000\%$
     \item Tiempo de asentamiento ($2\%$): $T_s = 120.0200\ \mathrm{s}$
-    \item Margen de fase: $PM = 52.7758^{\circ}$
+    \item Margen de fase: $PM = 54.4448^{\circ}$
     \item Estabilidad del lazo cerrado: estable (todos los polos con parte real negativa)
 \end{itemize}
 
@@ -195,22 +197,29 @@ Finalmente, para contrarrestar el fenómeno de windup debido a la acumulación d
     \item Si $Q = 0$, \texttt{ierr -= err}  
 \end{itemize}
 
-Para la parte experimental en TempLABUdeA, quedan como evidencias a anexar las series temporales medidas $T_1(t)$ y $Q_1(t)$ en formato \texttt{.csv} y su comparación directa con la simulación de la Figura~\ref{fig:step}.
+Análisis experimental e integración en notebook:
+
+El notebook unificado \texttt{Lab 6/Lab6\_codigo.ipynb} incluye celdas finales (Sección 3) que cargan automáticamente los datos experimentales de TempLABUdeA desde el archivo \texttt{data\_Q1.txt}. Dichas celdas:
+\begin{itemize}
+    \item Leen las series temporales $T_1(t)$ y $Q_1(t)$ de la ejecución experimental.
+    \item Normalizan la respuesta de temperatura respecto al setpoint inicial.
+    \item Generan una gráfica comparativa mostrando la potencia de control y la temperatura experimental.
+    \item Calculan estadísticas de la prueba (temperaturas inicial/final, cambios, rango de potencia).
+\end{itemize}
+
+Los resultados se guardan en \texttt{experimental\_stats.json} y la gráfica en \texttt{figures/experimental\_comparison.png}.
 
 \section{Entregables y evaluación}
-Con la documentación actual, se cumple:
+Con la documentación y archivos presentados se cumple:
 \begin{itemize}
     \item Trazado del LGR y selección de polos dominantes.
     \item Cálculo paso a paso de $K_p$, $T_i$, $T_d$.
     \item Gráficas de LGR y respuesta al escalón simulada.
-    \item Implementación computacional en notebook: \texttt{Lab 6/lab6\_unificado\_colab.ipynb}.
+    \item Implementación computacional unificada en: \texttt{Lab 6/Lab6\_codigo.ipynb}.
+    \item Análisis y procesamiento de datos experimentales integrado en el notebook.
 \end{itemize}
 
-Para completar el cierre experimental del laboratorio, falta anexar:
-\begin{itemize}
-    \item Datos experimentales de TempLABUdeA (archivos \texttt{.csv} con $T_1(t)$ y $Q_1(t)$).
-    \item Gráfica comparativa experimento vs simulación con los mismos ejes y condiciones iniciales.
-\end{itemize}
+La simulación y resultados experimentales se realiza al ejecutar las celdas del notebook en orden.
 
 \section*{Referencias}
 
