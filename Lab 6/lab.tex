@@ -32,7 +32,8 @@ Sistemas de Control Continuo}
 
 \vspace{0.8cm}
 
-{\LARGE \textbf{TempControlLab UdeA: Control PID del sistema térmico}}\\
+{\LARGE \textbf{Laboratorio 6: Diseño de PID mediante Lugar
+Geométrico de las Raíces para la planta Térmica}}\\
 
 \vspace{1cm}
 
@@ -92,10 +93,11 @@ El análisis por el Lugar Geométrico de las Raíces (LGR) consiste en observar 
 
 Con $K=0.293$, $\tau=169\,\mathrm{s}$ y los valores provisionales $T_i=\tau$, $T_d=\tau/4$, se obtuvo el LGR mostrado en la Figura~\ref{fig:lgr}.
 
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{lgr_lab6.png}
-    \caption{Lugar Geométrico de las Raíces para el modelo sin retardo explícito en el trazado.}
+    \includegraphics[width=0.8\linewidth]{figures/lgr.png}
+    \caption{Lugar Geométrico de las Raíces}
     \label{fig:lgr}
 \end{figure}
 
@@ -155,7 +157,17 @@ Con este procedimiento (y validación posterior por simulación con retardo $L=1
     \item $T_d = 2.899797\ \mathrm{s}$
 \end{itemize}
 
-El procedimiento computacional completo se implementó en el notebook unificado \texttt{Lab 6/Lab6\_codigo.ipynb}, donde se incluyen: (i) resolución numérica de ecuaciones en el polo deseado, (ii) trazado de LGR, (iii) ajuste por interpolación y (iv) simulación al escalón con cálculo de métricas.
+\subsection*{Uso del script \texttt{Lab6\_matlab.m}}
+Como apoyo al desarrollo del informe, el archivo \texttt{Lab6\_matlab.m} se utilizó para documentar la etapa de diseño numérico del PID. En particular, el script sirve para:
+\begin{itemize}
+    \item formular y resolver numéricamente las ecuaciones del controlador en el polo deseado mediante la función local \texttt{sistema\_ecuaciones};
+    \item verificar de forma preliminar la condición de lazo abierto alrededor de \(-1\);
+    \item ilustrar una respuesta temporal de referencia con marcas visuales de sobreimpulso y tiempo de asentamiento.
+\end{itemize}
+
+
+
+Se implementó en el notebook \texttt{Lab6\_codigo.ipynb}, donde se incluyen: (i) resolución numérica de ecuaciones en el polo deseado, (ii) trazado de LGR, (iii) ajuste por interpolación y (iv) simulación al escalón con cálculo de métricas.
 
 \section{Simulación y verificación}
 Con los parámetros $K_p$, $T_i$, $T_d$ calculados, se define la función de transferencia en lazo cerrado:
@@ -175,7 +187,7 @@ Estos valores satisfacen las metas del laboratorio ($\%OS\approx 10\%$, $T_s\app
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{step_lab6.png}
+    \includegraphics[width=0.8\textwidth]{Respuesta.png}
     \caption{Respuesta al escalón del sistema en lazo cerrado con PID ajustado.}
     \label{fig:step}
 \end{figure}
@@ -197,27 +209,6 @@ Finalmente, para contrarrestar el fenómeno de windup debido a la acumulación d
     \item Si $Q = 0$, \texttt{ierr -= err}  
 \end{itemize}
 
-Análisis experimental e integración en notebook:
-
-El notebook unificado \texttt{Lab 6/Lab6\_codigo.ipynb} incluye celdas finales (Sección 3) que cargan automáticamente los datos experimentales de TempLABUdeA desde el archivo \texttt{data\_Q1.txt}. Dichas celdas:
-\begin{itemize}
-    \item Leen las series temporales $T_1(t)$ y $Q_1(t)$ de la ejecución experimental.
-    \item Normalizan la respuesta de temperatura respecto al setpoint inicial.
-    \item Generan una gráfica comparativa mostrando la potencia de control y la temperatura experimental.
-    \item Calculan estadísticas de la prueba (temperaturas inicial/final, cambios, rango de potencia).
-\end{itemize}
-
-Los resultados se guardan en \texttt{experimental\_stats.json} y la gráfica en \texttt{figures/experimental\_comparison.png}.
-
-\section{Entregables y evaluación}
-Con la documentación y archivos presentados se cumple:
-\begin{itemize}
-    \item Trazado del LGR y selección de polos dominantes.
-    \item Cálculo paso a paso de $K_p$, $T_i$, $T_d$.
-    \item Gráficas de LGR y respuesta al escalón simulada.
-    \item Implementación computacional unificada en: \texttt{Lab 6/Lab6\_codigo.ipynb}.
-    \item Análisis y procesamiento de datos experimentales integrado en el notebook.
-\end{itemize}
 
 La simulación y resultados experimentales se realiza al ejecutar las celdas del notebook en orden.
 
