@@ -22,20 +22,37 @@ def save_txt(t, u1, u2, y1, y2, sp1, sp2, filename='data_ponly.txt'):
 print("Firmware:", lab.version)
 lab.LED(100)
 
-# ------------------------------------------------------------------------------
-# Parámetros del Controlador P-only
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Parámetros del Controlador PID (forma paralela)
+# Basados en los valores calculados en Miniproyecto1_MIMO(Planta_termica).ipynb
+# Usamos los valores de sintonía (si no se dispone de soluciones LGR ejecutadas,
+# se emplean los parámetros derivados por Ku/Pu presentes en la notebook).
 tau_11 = 159.0457
 K11 = 0.3271
-Kc = K11
-Q_bias = 0.0 # Definido por la guía para TempLABUdeA
-# Pu = 43.84
 
+# Valores de sintonía extraídos / calculados
+# Para el subsistema 1
+Kp1 = 0.6 * 500.0            # = 300.0 (Ku=500, Kp=0.6*Ku)
+Ti1 = 0.5 * 43.84            # = 21.92
+Td1 = 0.125 * 43.84          # = 5.48
 
-# ku = 500
-# Kp = 0.6*ku
-# Ti = 0.5*Pu
-# Td = 0.125*Pu 
+# Para el subsistema 2
+Kp2 = 0.6 * 500.0            # = 300.0
+Ti2 = 0.5 * 93.47            # = 46.735
+Td2 = 0.125 * 93.47          # = 11.68375
+
+# Convertir a forma paralela usada en el notebook: Ci(s)=Kp + Ki/s + Kd*s
+Ki1 = Kp1 / Ti1
+Kd1 = Kp1 * Td1
+
+Ki2 = Kp2 / Ti2
+Kd2 = Kp2 * Td2
+
+# Derivada filtrada (tiempo de filtrado continuo)
+T_der = 0.005
+
+# Bias inicial para Q (offset)
+Q_bias = 0.0
 
 # ------------------------------------------------------------------------------
 # Parámetros de la prueba
@@ -53,9 +70,14 @@ T2 = np.ones(ciclos) * lab.T2
 Q1 = np.zeros(ciclos)
 Q2 = np.zeros(ciclos)
 
-# Variables de estado del PID
-ierr = 0.0      # Integral acumulada
-prev_err = 0.0  # Error previo para la derivada 
+# Variables de estado del PID (dos canales)
+ierr1 = 0.0      # Integral acumulada canal 1
+prev_err1 = 0.0  # Error previo canal 1
+deriv_filt1 = 0.0
+
+ierr2 = 0.0      # Integral acumulada canal 2
+prev_err2 = 0.0  # Error previo canal 2
+deriv_filt2 = 0.0
 
 print("Iniciando Control P-only. Ctrl-C para detener.")
 print(f"{'t(s)':>6s} {'Q1(%)':>6s} {'T1(°C)':>7s} {'SP1(°C)':>7s} {'Err':>6s}")
@@ -82,30 +104,53 @@ try:
         # 1. Leer temperaturas actuales
         T1[i] = lab.T1
         
-        # 2. Lógica de control P-only: Q = Q_bias + Kc * (SP - PV) 
+        # 2. Leer temperatura actual para canal 2 cuando exista
+        T2[i] = lab.T2
+
+        # Canal 1 - PID paralelo con derivada filtrada
         error1 = Tset1[i] - T1[i]
-        
-        # Términos PID
-        # Integral
-        ierr += error1 
-        # Derivada
-        deriv = error1 - prev_err
-        
-        # Ecuación de Control
-        # Q1[i] = Q_bias + Kp * error1 + (Kp / Ti) * ierr + Kp * Td * deriv
-        Q1[i] = Q_bias + Kc * error1 
-        
-        # Si se satura el actuador, se restaura la integral para evitar sobreimpulso excesivo
-        if Q1[i] >= 100:
-            Q1[i] = 100
-            ierr -= error1
-        elif Q1[i] <= 0:
-            Q1[i] = 0
-            ierr -= error1
+        dt = max(1e-6, t_array[i] - t_array[i-1]) if i > 0 else 1.0
+
+        # Integral (rectangular) y anti-windup aplicado después de saturación
+        ierr1 += error1 * dt
+
+        # Derivada cruda
+        deriv_raw1 = (error1 - prev_err1) / dt
+        # Filtro discreto aproximado: alpha = T/(T+dt)
+        alpha = T_der / (T_der + dt)
+        deriv_filt1 = alpha * deriv_filt1 + (1 - alpha) * deriv_raw1
+
+        # Señal de control (paralela): u = Kp*e + Ki*integral + Kd*deriv
+        u1 = Q_bias + Kp1 * error1 + Ki1 * ierr1 + Kd1 * deriv_filt1
+
+        # Saturación y anti-windup
+        if u1 > 100:
+            u1 = 100
+            ierr1 -= error1 * dt
+        elif u1 < 0:
+            u1 = 0
+            ierr1 -= error1 * dt
+
+        Q1[i] = u1
+        prev_err1 = error1
+
+        # Canal 2 - PID paralelo (si se desea controlar canal 2 también)
+        error2 = Tset2[i] - T2[i]
+        ierr2 += error2 * dt
+        deriv_raw2 = (error2 - prev_err2) / dt
+        deriv_filt2 = alpha * deriv_filt2 + (1 - alpha) * deriv_raw2
+        u2 = Q_bias + Kp2 * error2 + Ki2 * ierr2 + Kd2 * deriv_filt2
+        if u2 > 100:
+            u2 = 100
+            ierr2 -= error2 * dt
+        elif u2 < 0:
+            u2 = 0
+            ierr2 -= error2 * dt
+        Q2[i] = u2
 
         # 4. Enviar señales
         lab.Q1(Q1[i])
-        prev_err = error1
+        lab.Q2(Q2[i])
         
         if i % 5 == 0: # Imprimir cada 5 iteraciones
             print(f"{t_array[i]:6.1f} {Q1[i]:6.2f} {T1[i]:7.2f} {Tset1[i]:7.2f} {error1:6.2f}")
