@@ -1,0 +1,135 @@
+\documentclass[letterpaper,12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{ragged2e}
+\usepackage{array}
+\usepackage{geometry}
+\geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+
+\setlength{\headheight}{14.5pt}
+\setlength{\parskip}{0.7em}
+\setlength{\parindent}{0pt}
+
+\captionsetup{justification=justified}
+\pagestyle{fancy}
+\lhead{Parcial 2}
+\chead{2026-1}
+\rhead{Universidad de Antioquia}
+\cfoot{\thepage}
+
+\graphicspath{{figures/}}
+
+\begin{document}
+
+\justifying
+
+\begin{center}
+    \textsc{Universidad de Antioquia\\
+    Facultad de Ingeniería\\
+    Departamento de Ingeniería Electrónica\\
+    Sistemas de Control Continuo}
+
+    \vspace{1.2cm}
+
+    \includegraphics[height=2.5cm]{udea.png}
+
+    \vspace{0.8cm}
+
+    {\LARGE \textbf{Parcial 2: Análisis sociotécnico de un sistema de asistencia para la movilidad}}\\
+    {\large \textbf{Stakeholders, riesgos e implicaciones de diseño}}
+
+    \vspace{1cm}
+
+    \textbf{Luis Alberto Ardila Páez}\\
+    \textbf{Daniel Esteban Tirado Rojas}\\
+    \textbf{Jose Leonardo Pérez Poveda}
+\end{center}
+
+\vspace{1cm}
+
+\section{Introducción}
+
+Este informe presenta el análisis sociotécnico de un sistema de asistencia para personas con dificultades de movilidad y para procesos de rehabilitación física supervisada.
+
+El foco del documento no está en una planta física ni en un modelo matemático particular, sino en el uso humano y clínico del sistema. Se examina quién interactúa con él, en qué contextos se implementa, cuáles son sus beneficios potenciales y qué limitaciones deben atenderse desde la ingeniería.
+
+La discusión se organiza en tres partes: mapeo de actores, análisis de impacto y riesgo, e implicaciones de diseño.
+
+\section{Propósito}
+
+El propósito principal es describir el contexto de uso de un sistema de apoyo a la movilidad, distinguiendo los actores involucrados y las condiciones de operación que influyen en su seguridad y efectividad.
+
+De manera específica, el análisis busca:
+
+\begin{itemize}
+    \item Identificar los usuarios directos, profesionales e indirectos relacionados con el sistema.
+    \item Analizar los beneficios esperados y las limitaciones técnicas que pueden aparecer en la práctica.
+    \item Reconocer fallas posibles fuera del laboratorio o del entorno controlado.
+    \item Traducir el análisis sociotécnico en decisiones concretas de ingeniería.
+\end{itemize}
+
+\section{Stakeholders y contexto}
+
+Se identifican cuatro grupos principales de interés. El usuario directo es la persona con limitaciones de movilidad que requiere apoyo para caminar o rehabilitarse. En este grupo se incluyen adultos mayores, pacientes en recuperación, personas con enfermedades neuromotoras y usuarios con patrones de marcha inadecuados.
+
+Los actores profesionales incluyen fisioterapeutas, médicos especialistas y personal de ingeniería encargado del diseño, mantenimiento y mejora del sistema. También aparecen actores administrativos y legales, cuya función es asegurar que el producto cumpla con requisitos de seguridad y regulación.
+
+Como usuarios indirectos se consideran familiares, cuidadores, instituciones de salud, centros de rehabilitación, empresas y aseguradoras. Aunque no operan el sistema de forma directa, todos se ven afectados por su desempeño, disponibilidad y confiabilidad.
+
+El contexto institucional previsto incluye hospitales, clínicas, centros de terapia física, entornos domésticos supervisados y espacios con condiciones variables de superficie y ambiente.
+
+\section{Análisis de impacto y riesgo}
+
+El sistema puede aportar beneficios importantes en un contexto de rehabilitación. Entre ellos están la mejora de la movilidad, la reducción del riesgo de lesiones futuras, la corrección de patrones de marcha y la posibilidad de terapias más consistentes y repetitivas.
+
+Sin embargo, también existen limitaciones técnicas que afectan el desempeño real. Se destacan los retardos entre la detección del movimiento y la acción del controlador, la dificultad para distinguir actividades similares como caminar, trotar o correr, la variabilidad entre usuarios y el ruido o la mala calibración de sensores.
+
+Fuera del laboratorio pueden presentarse fallas adicionales. El sistema puede verse afectado por diferencias antropométricas no contempladas, condiciones ambientales adversas como humedad o polvo, bloqueos mecánicos, fallas de actuadores o uso inadecuado en actividades para las que no fue diseñado.
+
+\subsection*{Supuestos de diseño}
+
+El diseño parte de varios supuestos: los usuarios reciben capacitación, el sistema se utiliza únicamente con fines de rehabilitación, existe supervisión profesional en etapas iniciales y las sesiones ocurren sobre superficies relativamente planas y controladas.
+
+\section{Implicaciones de ingeniería}
+
+El análisis sociotécnico se traduce en decisiones concretas de diseño. La diferencia entre usuarios exige control adaptable o ajuste automático de parámetros. La posibilidad de aplicar fuerzas excesivas sugiere limitar torque y velocidad angular para proteger al paciente.
+
+También se justifica incorporar filtrado digital y redundancia en sensores críticos para reducir el efecto del ruido, así como sensores adicionales para detectar terreno o perturbaciones cuando el sistema opere en entornos no ideales.
+
+\begin{table}[H]
+    \centering
+    \caption{Resumen de decisiones de ingeniería derivadas del análisis sociotécnico}
+    \begin{tabular}{>{\raggedright\arraybackslash}p{4cm} >{\raggedright\arraybackslash}p{4.3cm} >{\raggedright\arraybackslash}p{4.3cm} >{\raggedright\arraybackslash}p{3.4cm}}
+        \toprule
+        \textbf{Situación identificada} & \textbf{Decisión de ingeniería} & \textbf{Justificación técnica} & \textbf{Beneficio esperado} \\
+        \midrule
+        Diferencias de peso, altura y condición física entre usuarios & Implementar control adaptativo o ajuste automático de parámetros & El comportamiento dinámico cambia entre personas y puede afectar la estabilidad & Mayor precisión y seguridad \\
+        Riesgo de aplicar fuerzas excesivas durante la rehabilitación & Incorporar límites de torque y velocidad angular & Evita movimientos bruscos que puedan causar lesiones & Más seguridad en terapia \\
+        Posibles fallas o ruido en sensores & Utilizar filtrado digital y redundancia en sensores críticos & Reduce errores en la estimación de estados & Mayor confiabilidad del sistema \\
+        Uso en superficies irregulares o condiciones no ideales & Añadir sensores para detectar terreno y perturbaciones & Permite ajustar la asistencia según el entorno & Mejor desempeño fuera del laboratorio \\
+        Uso incorrecto por parte de usuarios o terapeutas & Diseñar una interfaz simple con alertas y modos seguros & Disminuye errores humanos de configuración y operación & Mayor facilidad de uso y adopción \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Conclusiones}
+
+El análisis permite concluir que el valor del sistema no depende solo del mecanismo de asistencia, sino de su integración segura con el entorno clínico y con las capacidades reales de los usuarios.
+
+La variabilidad entre pacientes, el ruido sensorial, los retardos y el uso fuera de condiciones controladas son factores que deben tratarse desde el diseño y no como problemas secundarios.
+
+\section*{Referencias}
+
+\begin{enumerate}
+    \item Organización Mundial de la Salud. (consulta general). \textit{Rehabilitación y movilidad funcional}.
+\end{enumerate}
+
+\end{document}
